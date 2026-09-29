@@ -1,0 +1,35 @@
+# Grist local du projet : construction et tests. Données fictives uniquement.
+# Démarrage (depuis la racine du projet) : docker compose -f grist-local/docker-compose.yml up -d
+# Interface : http://localhost:8484 (ou GRIST_PORT) ; connexion de test : /test/login?username=<adresse>
+# Renommer « name » pour chaque projet : chaque projet garde ainsi son propre volume de données.
+name: grist-projet
+services:
+  grist:
+    image: gristlabs/grist:latest
+    ports:
+      - "${GRIST_PORT:-8484}:8484"
+    environment:
+      APP_HOME_URL: "http://localhost:${GRIST_PORT:-8484}"
+      GRIST_SESSION_SECRET: "grist-local-seulement"
+      # Page /test/login : se connecter sous n'importe quelle adresse, pour tester chaque rôle.
+      GRIST_TEST_LOGIN: "1"
+      GRIST_DEFAULT_EMAIL: "proprietaire@projet.test"
+      GRIST_ADMIN_EMAIL: "proprietaire@projet.test"
+      # Sans cela, Grist 1.7+ renvoie tout vers l'assistant /boot.
+      GRIST_IN_SERVICE: "true"
+      # Comme la plupart des instances publiques : connexion obligatoire, pas d'accès anonyme.
+      GRIST_FORCE_LOGIN: "true"
+      GRIST_ANON_PLAYGROUND: "false"
+      GRIST_SINGLE_ORG: "docs"
+      GRIST_ORG_IN_PATH: "false"
+      # Pas de bac à sable gVisor sous Docker Desktop (local seulement).
+      GRIST_SANDBOX_FLAVOR: "unsandboxed"
+      GRIST_TELEMETRY_LEVEL: "off"
+      GRIST_ALLOW_AUTOMATIC_VERSION_CHECKING: "false"
+      # Feuille de style locale : masque le bandeau rouge de la connexion de test.
+      APP_STATIC_INCLUDE_CUSTOM_CSS: "true"
+    volumes:
+      - donnees:/persist
+      - ./custom.css:/grist/static/custom.css:ro
+volumes:
+  donnees:

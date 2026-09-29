@@ -1,0 +1,2 @@
+/* Grist local : masque le bandeau « Authentication is not enforced » de la connexion de test. */
+.dev_warning { display: none !important; }
