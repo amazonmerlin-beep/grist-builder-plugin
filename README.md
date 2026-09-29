@@ -1,0 +1,44 @@
+# grist-builder
+
+Plugin Claude Code pour mener un projet de **formulaire ou d'enquête sur Grist**, du besoin du client à la
+livraison du document : diagnostic de l'entrée, estimation en jours, arbitrages, construction, tests,
+guides, livraison `.grist`. Claude fabrique ; le consultant pilote le client.
+
+## Installer
+
+Dans Claude Code :
+
+```
+/plugin marketplace add amazonmerlin-beep/grist-builder-plugin
+/plugin install grist-builder@grist-builder
+```
+
+Ou en ligne de commande :
+
+```
+claude plugin marketplace add amazonmerlin-beep/grist-builder-plugin
+claude plugin install grist-builder@grist-builder
+```
+
+Mettre à jour : `claude plugin marketplace update grist-builder`, puis `claude plugin update grist-builder@grist-builder`.
+
+## Utiliser
+
+Décrire le projet à Claude (« le client veut faire remplir un questionnaire de 45 questions à ses 40
+antennes… », avec ses documents) : le skill se charge, pose le diagnostic, estime, puis guide les phases.
+
+Pour la construction, il faut sur le poste : **Node 18+**, **Docker** et **Google Chrome** (tests). Claude
+vérifie et le signale s'il en manque.
+
+## Contenu
+
+| Où | Quoi |
+|---|---|
+| `plugins/grist-builder/skills/grist-builder/SKILL.md` | Point d'entrée : phases, signaux d'alerte |
+| `…/references/` | Cadrage, estimation, arbitrages, MCP Grist, widget, permissions, données, livraison |
+| `…/kit/` | Socle testé : Grist local, construction scriptée, identité et règles d'accès, squelette du module, tests, guides, livraison |
+| `docs/specs/` | Spécification |
+| `docs/tests/` | Scénarios de vérification du skill, sans et avec |
+
+Étalon des estimations : une enquête de 100 questions, 5 rôles, suivi, relances, synthèse, carte et guides
+(mission LAPI) = 2 jours de production à partir d'une entrée mûre.

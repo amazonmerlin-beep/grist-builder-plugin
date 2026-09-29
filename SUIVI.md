@@ -5,21 +5,21 @@
 > Spécification : `docs/specs/2026-09-29-grist-builder-design.md`. Dépôt distant :
 > https://github.com/amazonmerlin-beep/grist-builder-plugin (l'utilisateur autorise les push sans demander).
 
-## Avancement global : **55 %**
+## Avancement global : **95 %**
 
 | Étape | Avancement |
 |---|---|
-| 1. Dépôt, marketplace, plugin, README | 80 % (README à écrire) |
+| 1. Dépôt, marketplace, plugin, README | 100 % |
 | 2. Scénarios de référence sans skill (RED) | 100 % (`docs/tests/reference.md`) |
 | 3. Kit : infrastructure (Grist local, client API, configuration) | 100 % |
 | 4. Kit : modèle, règles d'accès, construction | 100 % (6 tests de droits verts) |
 | 5. Kit : squelette du module, déploiement, tests de parcours | 100 % (3 parcours verts) |
 | 6. Kit : guides dans le document, livraison `.grist` | 100 % (réimport vérifié) |
-| 7. Références « projet » : cadrage, estimation, arbitrages | 0 % |
-| 8. Références « technique » : MCP, widget, permissions, données, livraison | 0 % |
-| 9. SKILL.md | 0 % |
-| 10. Vérification avec le skill (GREEN), corrections | 0 % |
-| 11. Validation du plugin, installation, push | 0 % |
+| 7. Références « projet » : cadrage, estimation, arbitrages | 100 % |
+| 8. Références « technique » : MCP, widget, permissions, données, livraison | 100 % |
+| 9. SKILL.md | 100 % |
+| 10. Vérification avec le skill (GREEN), corrections | 100 % |
+| 11. Validation du plugin, installation, push | 90 % (validé, poussé ; installation par les collègues à essayer) |
 
 ## a) Plan de réalisation
 
@@ -60,10 +60,13 @@ Rôles du kit : `repondant` (rattaché à une entité), `pilote` (lit tout), `ad
 
 ## c) Liste de contrôle
 - [x] Spécification validée par l'utilisateur
-- [ ] Étapes 1 à 11 ci-dessus
+- [x] Étapes 1 à 10
+- [x] Validation (`claude plugin validate .` sans avertissement), push sur GitHub
+- [ ] Installation réelle par un collègue depuis GitHub (README)
 
 ## e) Prochaines actions
-1. Étapes 7 et 8 (références), 9 (SKILL.md), 10 (vérification), README, push.
+1. Faire installer le plugin par un collègue (README) et recueillir ses retours.
+2. Ajouter au kit, si les projets le demandent : outil des comptes en masse, captures en série, jeu de démonstration (voir LAPI).
 
 ## Notes
 - Essais du kit dans `essai/` (ignoré par git), Grist local sur le port 8485 pour ne pas gêner LAPI.
