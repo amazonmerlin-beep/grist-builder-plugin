@@ -4,8 +4,13 @@
 // Les attentes sont calculées d'après les données (jamais figées) : le test se rejoue à volonté.
 const test = require('node:test');
 const assert = require('node:assert/strict');
-const { client, docCourant } = require('../outils/lib/cles');
+const { client, docCourant, BASE } = require('../outils/lib/cles');
 const config = require('../projet.config');
+// Garde-fou : ces tests écrivent des données fictives. Grist local seulement (jamais une instance distante) ;
+// si quelqu'un consulte le document de travail, viser un document d'essais : DOC_COURANT=grist-local/doc-essais.json
+if (!/localhost|127\.0\.0\.1/.test(BASE) && process.env.TESTS_SUR_CE_DOCUMENT !== 'oui') {
+  throw new Error(`Tests refusés sur ${BASE} : ils écrivent des données fictives (Grist local seulement).`);
+}
 
 const DOC = (docCourant() || {}).docId;
 const c = {};
@@ -79,4 +84,33 @@ test('guides : chaque rôle lit ceux de son public ; l’admin les lit tous', as
     assert.deepEqual(lus, role === 'admin' ? tous.map(x => x.Cle).sort() : attendus(role), role);
   }
   assert.deepEqual((await lire(c.inconnu, 'Guides')).map(x => x.Cle).sort(), attendus('inconnu'));
+});
+
+test('pièces jointes : lisibles par qui lit la cellule, refusées aux autres (403)', async () => {
+  // Une pièce jointe dans un guide réservé à l'administration
+  const [pj] = await proprio.televerser(DOC, [{ nom: 'reserve.pdf', contenu: Buffer.from('%PDF-1.1\n%%EOF\n'), type: 'application/pdf' }]);
+  const [gid] = await proprio.ajouter(DOC, 'Guides', [{ Cle: 'test-pj', Titre: 'Test PJ', Public: ['L', 'admin'], Ordre: 999, Contenu: '', Images: ['L', pj] }]);
+  const statut = async g => (await fetch(`${BASE}/api/docs/${DOC}/attachments/${pj}/download`, { headers: { Authorization: 'Bearer ' + g.apiKey } })).status;
+  try {
+    const admin = config.comptesTest.find(x => x[2] === 'admin');
+    const autre = config.comptesTest.find(x => x[2] !== 'admin');
+    assert.equal(await statut(c[cle(admin[0])]), 200, 'administration : lit la pièce');
+    assert.equal(await statut(c[cle(autre[0])]), 403, `${autre[2]} : pièce refusée`);
+    assert.equal(await statut(c.inconnu), 403, 'inconnu : pièce refusée');
+  } finally { await proprio.appliquer(DOC, [['RemoveRecord', 'Guides', gid]]); }
+});
+
+test('formulaire public (si schema/formulaire.js) : un anonyme crée une ligne, sans rien pouvoir lire', async t => {
+  const lien = (docCourant() || {}).lienFormulaire;
+  if (!lien) return t.skip('pas de formulaire public dans ce projet');
+  const cleForm = /forms\/([^/]+)\//.exec(lien)[1];
+  const { TABLE } = require('../schema/formulaire');
+  const avant = (await proprio.lignes(DOC, TABLE)).length;
+  const r = await fetch(`${BASE}/api/s/${cleForm}/tables/${TABLE}/records`, { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest' }, body: JSON.stringify({ records: [{ fields: {} }] }) });
+  assert.equal(r.status, 200, 'envoi anonyme accepté (règle user.ShareRef → +C sur la table)');
+  const { records: [{ id }] } = await r.json();
+  const lu = await fetch(`${BASE}/api/s/${cleForm}/tables/${TABLE}/records`);
+  assert.equal(((await lu.json()).records || []).length, 0, 'lecture anonyme : rien');
+  assert.equal((await proprio.lignes(DOC, TABLE)).length, avant + 1);
+  await proprio.appliquer(DOC, [['RemoveRecord', TABLE, id]]);
 });

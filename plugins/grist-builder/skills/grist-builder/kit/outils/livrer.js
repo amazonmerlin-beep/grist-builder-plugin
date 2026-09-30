@@ -36,7 +36,8 @@ async function verifierImport(g, fichier) {
   const avant = docCourant();
   let temporaire = null;
   try {
-    lancer(path.join(__dirname, 'construire.js'), ['--nom', NOM]);
+    // Le fichier livré utilise le chargeur public (le chargeur local ne vaut que pour ce poste)
+    lancer(path.join(__dirname, 'construire.js'), ['--nom', NOM, '--chargeur', process.env.CHARGEUR || 'public']);
     temporaire = docCourant();
     lancer(path.join(__dirname, '..', 'module', 'build.js'));
     lancer(path.join(__dirname, 'deployer-module.js'), ['--doc', temporaire.docId, '--widget', String(temporaire.sectionId)]);

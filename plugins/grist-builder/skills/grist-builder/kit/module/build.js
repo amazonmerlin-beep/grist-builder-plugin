@@ -12,7 +12,7 @@ const ORDRE = ['core.js', 'markdown.js', 'app.js', 'vue-aide.js', 'vue-exemple.j
 const FACULTATIFS = new Set([]);
 
 const config = require('../projet.config');
-const CONFIG = { titre: config.titre, contactEmail: config.contactEmail, roles: config.roles, onglets: config.onglets, tablesModule: config.tablesModule };
+const CONFIG = { titre: config.titre, contactEmail: config.contactEmail, roles: config.roles, onglets: config.onglets, tablesModule: config.tablesModule, dependances: config.dependances || {} };
 const version = require('../package.json').version + '+' + new Date().toISOString().slice(0, 16).replace(/[-:T]/g, '');
 const morceaux = [];
 for (const f of ORDRE) {
@@ -31,7 +31,8 @@ for (const f of ORDRE) {
 }
 const js = `globalThis.Formulaire = { CONFIG: ${JSON.stringify(CONFIG)} };\n${morceaux.join('\n')}\nFormulaire.VERSION = ${JSON.stringify(version)};\nFormulaire.app.demarrer();\n`;
 if (/<\/script/i.test(js)) throw new Error('Le code contient « </script » : le builder le couperait.');
-const css = fs.readFileSync(path.join(SRC, 'ui.css'), 'utf8');
+// ui.css d'abord, puis les feuilles du projet (theme.css…) par ordre alphabétique : elles l'emportent
+const css = ['ui.css', ...fs.readdirSync(SRC).filter(f => f.endsWith('.css') && f !== 'ui.css').sort()].map(f => fs.readFileSync(path.join(SRC, f), 'utf8')).join('\n');
 const html = `<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><style>\n${css}\n</style>\n<div id="app" class="formulaire"></div>\n`;
 
 fs.mkdirSync(DIST, { recursive: true });

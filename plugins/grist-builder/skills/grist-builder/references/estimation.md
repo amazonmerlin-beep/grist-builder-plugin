@@ -27,6 +27,8 @@ Toujours présenter le calcul brique par brique : le client voit d'où vient le 
 | Cadrage | +0,5 à 1 j si l'entrée est partielle ; +1 à 2 j si elle est floue (`cadrage.md`) |
 | Marge | 20 % de la production |
 | Pilotage client | Réunions, ateliers, recette : au nombre de séances (souvent 0,25 j par séance, préparation comprise) |
+| Document existant | Clonage, étude, reproduction des défauts signalés : 0,25 à 0,5 j ; reprise des données et des pièces jointes : 0,5 j (`reprise.md`) |
+| Outil métier au-delà d'un formulaire | Circuit à statuts, séances, grille de notation, synthèse : compter les écrans métier à part, et prévoir une passe de relecture visuelle avec le client (0,25 à 0,5 j) |
 
 Le temps d'attente des décisions du client n'est pas du travail : le dire, le signaler dans le calendrier.
 

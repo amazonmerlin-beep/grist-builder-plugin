@@ -1,6 +1,6 @@
 'use strict';
 // Construit de zéro le document du projet : tables, formules, déclencheurs, données de base, guides,
-// page du module (widget personnalisé), règles d'accès, partage. Tout vient de projet.config.js et schema/.
+// page du module (widget personnalisé), formulaire public (si schema/formulaire.js), règles d'accès, partage. Tout vient de projet.config.js et schema/.
 // Usage : node outils/construire.js [--nom "…"] [--partage lien|invitations] [--proprietaire adresse]…
 // Par défaut : Grist local. Sur un autre serveur : GRIST_URL=… GRIST_API_KEY=… GRIST_ORG=… node outils/construire.js
 const fs = require('fs');
@@ -12,18 +12,77 @@ const { appliquerRegles } = require('../schema/acces');
 const { chargerGuides, DOSSIER: DOSSIER_GUIDES } = require('./lib/guides');
 const ENTITES = require('../schema/entites.json');
 
-const BUILDER = 'https://gristlabs.github.io/grist-widget/custom-widget-builder/index.html';
+const crypto = require('crypto');
+const { execFileSync } = require('child_process');
+// Chargeur du widget : public (github.io) pour l'instance du client ; servi par Grist lui-même en local, sinon
+// Chrome bloque les appels du widget vers localhost (protection « réseau local »). --chargeur public|local|<url>.
+const CHARGEUR_PUBLIC = 'https://gristlabs.github.io/grist-widget/custom-widget-builder/index.html';
+const CHARGEUR_LOCAL = `${BASE}/v/local/chargeur/custom-widget-builder/index.html`;
+// Formulaire public facultatif : schema/formulaire.js exporte { TABLE, TITRE, SECTIONS } (references/donnees.md)
+const FORMULAIRE = fs.existsSync(path.join(__dirname, '..', 'schema', 'formulaire.js')) ? require('../schema/formulaire') : null;
 
 function args() {
   const a = process.argv.slice(2);
-  const o = { nom: config.nom, espace: config.espace, partage: 'lien', proprietaires: [] };
+  const o = { nom: config.nom, espace: config.espace, partage: 'lien', proprietaires: [], chargeur: /localhost|127\.0\.0\.1/.test(BASE) ? 'local' : 'public' };
   for (let i = 0; i < a.length; i++) {
     if (a[i] === '--nom') o.nom = a[++i];
     else if (a[i] === '--espace') o.espace = a[++i];
     else if (a[i] === '--partage') o.partage = a[++i];
     else if (a[i] === '--proprietaire') o.proprietaires.push(a[++i].toLowerCase());
+    else if (a[i] === '--chargeur') o.chargeur = a[++i];
   }
   return o;
+}
+
+/** Adresse publique du formulaire : la clé de partage n'est connue que de la base de l'instance (ici, Grist local). */
+function lienFormulaire(docId, sectionId) {
+  try {
+    const compose = fs.readFileSync(path.join(__dirname, '..', 'grist-local', 'docker-compose.yml'), 'utf8');
+    const conteneur = `${(/^name:\s*(\S+)/m.exec(compose) || [])[1] || 'grist-projet'}-grist-1`;
+    const code = `const s=require('/grist/node_modules/@gristlabs/sqlite3');new s.Database('/persist/home.sqlite3').get("select key from shares where doc_id=?",["${docId}"],(e,r)=>console.log(r?r.key:''))`;
+    const cle = execFileSync('docker', ['exec', conteneur, 'node', '-e', code], { encoding: 'utf8' }).trim();
+    return cle ? `${BASE}/forms/${cle}/${sectionId}` : '';
+  } catch (e) { return ''; }
+}
+
+/** Crée et publie le formulaire décrit par schema/formulaire.js ; renvoie { sectionRef, lien }. */
+async function construireFormulaire(g, doc, ref) {
+  const { TABLE, TITRE, SECTIONS } = FORMULAIRE;
+  const [t] = await g.sql(doc, 'select id from _grist_Tables where tableId = ?', [TABLE]);
+  const rf = await g.appliquer(doc, [['CreateViewSection', t.id, 0, 'form', null, null]]);
+  const form = rf.retValues[0];
+  const anciens = await g.sql(doc, 'select id from _grist_Views_section_field where parentId = ?', [form.sectionRef]);
+  if (anciens.length) await g.appliquer(doc, [['BulkRemoveRecord', '_grist_Views_section_field', anciens.map(x => x.id)]]);
+  const cols = TABLES.find(x => x.id === TABLE).colonnes;
+  const champs = SECTIONS.flat().filter(e => e.col);
+  const opts = e => {
+    const c = cols.find(x => x.id === e.col);
+    if (!c) throw new Error(`Formulaire : colonne inconnue ${e.col}`);
+    const w = {};
+    if (e.requis) w.formRequired = true;
+    if (e.question) w.question = e.question;
+    if (e.lignes) Object.assign(w, { formTextFormat: 'multiline', formTextLineCount: e.lignes });
+    if (c.type === 'Choice' && ((c.options || {}).choices || []).length <= 6) w.formSelectFormat = 'radio';
+    return JSON.stringify(w);
+  };
+  const rc = await g.appliquer(doc, [['BulkAddRecord', '_grist_Views_section_field', champs.map(() => null), {
+    parentId: champs.map(() => form.sectionRef), colRef: champs.map(e => ref(TABLE, e.col)),
+    parentPos: champs.map((_, i) => i + 1), widgetOptions: champs.map(opts),
+  }]]);
+  const ids = Object.fromEntries(champs.map((e, i) => [e.col, rc.retValues[0][i]]));
+  const uid = () => crypto.randomUUID();
+  const noeud = e => (e.col ? { id: uid(), type: 'Field', leaf: ids[e.col] } : { id: uid(), type: 'Paragraph', text: e.texte, alignment: e.centre ? 'center' : 'left', children: [] });
+  const [entete, ...sections] = SECTIONS;
+  const mise = { id: uid(), type: 'Layout', children: [...entete.map(noeud), ...sections.map(s => ({ id: uid(), type: 'Section', children: s.map(noeud) })), { id: uid(), type: 'Submit' }] };
+  // Publication : ligne de partage, page rattachée, section marquée formulaire publié
+  const rs = await g.appliquer(doc, [['AddRecord', '_grist_Shares', null, { linkId: uid(), options: '{"publish":true}' }]]);
+  const [page] = await g.sql(doc, 'select id from _grist_Pages where viewRef = ?', [form.viewRef]);
+  await g.appliquer(doc, [
+    ['UpdateRecord', '_grist_Views', form.viewRef, { name: TITRE }],
+    ['UpdateRecord', '_grist_Views_section', form.sectionRef, { title: TITRE, layoutSpec: JSON.stringify(mise), shareOptions: '{"publish":true,"form":true}' }],
+    ['UpdateRecord', '_grist_Pages', page.id, { shareRef: rs.retValues[0] }],
+  ]);
+  return { sectionRef: form.sectionRef, lien: lienFormulaire(doc, form.sectionRef), questions: champs.length };
 }
 
 const t0 = Date.now();
@@ -117,12 +176,20 @@ const cibleRef = c => (/^Ref(List)?:(.+)$/.exec(c.type) || [])[2];
   const tSupport = (await g.sql(doc, "select id from _grist_Tables where tableId = 'Parametres'"))[0].id;
   const r = await g.appliquer(doc, [['CreateViewSection', tSupport, 0, 'custom', null, null]]);
   const { viewRef, sectionRef } = r.retValues[0];
+  const BUILDER = o.chargeur === 'local' ? CHARGEUR_LOCAL : o.chargeur === 'public' ? CHARGEUR_PUBLIC : o.chargeur;
   const customView = { mode: 'url', url: BUILDER, widgetId: null, pluginId: '', widgetDef: null, access: 'full', columnsMapping: null, widgetOptions: { _html: '<p style="font-family:system-ui;padding:2em">Module en cours de déploiement…</p>', _js: '' } };
   await g.appliquer(doc, [
     ['UpdateRecord', '_grist_Views', viewRef, { name: config.titre }],
     ['UpdateRecord', '_grist_Views_section', sectionRef, { title: config.titre, options: JSON.stringify({ customView: JSON.stringify(customView) }) }],
   ]);
-  etape(`Page unique « ${config.titre} » (widget ${sectionRef})`);
+  etape(`Page unique « ${config.titre} » (widget ${sectionRef}, chargeur ${o.chargeur})`);
+
+  // Formulaire public (facultatif) : créé avant les règles, qui lui ouvrent la création (user.ShareRef)
+  let formulaire = null;
+  if (FORMULAIRE) {
+    formulaire = await construireFormulaire(g, doc, ref);
+    etape(`Formulaire public : ${formulaire.questions} questions, section ${formulaire.sectionRef}${formulaire.lien ? ', ' + formulaire.lien : ''}`);
+  }
 
   // Règles d'accès
   const acl = await appliquerRegles(g, doc);
@@ -139,6 +206,6 @@ const cibleRef = c => (/^Ref(List)?:(.+)$/.exec(c.type) || [])[2];
   const [nb] = await g.sql(doc, "select (select count(*) from _grist_Tables where tableId not like '_grist%') as tables, (select count(*) from _grist_Views) as pages, (select count(*) from _grist_ACLRules) as regles");
   etape(`Contrôle : ${JSON.stringify(nb)}`);
 
-  ecrireDocCourant({ docId: doc, sectionId: sectionRef, viewId: viewRef, nom: o.nom, base: BASE, construitLe: new Date().toISOString(), dureeSecondes: (Date.now() - t0) / 1000 });
+  ecrireDocCourant({ docId: doc, sectionId: sectionRef, viewId: viewRef, formSectionId: formulaire && formulaire.sectionRef, lienFormulaire: formulaire && formulaire.lien, nom: o.nom, base: BASE, construitLe: new Date().toISOString(), dureeSecondes: (Date.now() - t0) / 1000 });
   console.log(`\nTerminé en ${((Date.now() - t0) / 1000).toFixed(1)} s. Document : ${BASE}/o/docs/doc/${doc}`);
 })().catch(e => { console.error('ÉCHEC :', e.message); if (e.corps) console.error(JSON.stringify(e.corps).slice(0, 2000)); process.exit(1); });

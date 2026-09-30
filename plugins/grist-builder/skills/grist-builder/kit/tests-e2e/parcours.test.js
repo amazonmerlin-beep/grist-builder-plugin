@@ -5,8 +5,13 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
 const { navigateur, ouvrir, cliquer } = require('./navigateur');
-const { client, docCourant } = require('../outils/lib/cles');
+const { client, docCourant, BASE } = require('../outils/lib/cles');
 const config = require('../projet.config');
+// Garde-fou : ces tests écrivent des données fictives. Grist local seulement (jamais une instance distante) ;
+// si quelqu'un consulte le document de travail, viser un document d'essais : DOC_COURANT=grist-local/doc-essais.json
+if (!/localhost|127\.0\.0\.1/.test(BASE) && process.env.TESTS_SUR_CE_DOCUMENT !== 'oui') {
+  throw new Error(`Tests refusés sur ${BASE} : ils écrivent des données fictives (Grist local seulement).`);
+}
 
 const DOC = docCourant().docId;
 const attendre = ms => new Promise(r => setTimeout(r, ms));

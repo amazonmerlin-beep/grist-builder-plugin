@@ -9,7 +9,7 @@
 
   function bandeau() {
     const m = C.etat.moi, esc = C.esc;
-    return `<header class="bandeau"><h1>${esc(C.param('titre', CONFIG.titre))}</h1>
+    return `<header class="bandeau"><h1><span class="bandeau-sur">${esc(C.param('sous_titre', ''))}</span>${esc(C.param('titre', CONFIG.titre))}</h1>
       <div class="qui"><b>${esc(m.nom || m.email)}</b><br>${esc(libelleRole(m.role))}</div></header>`;
   }
   let derniereVue = null;
@@ -17,27 +17,56 @@
     const e = C.etat;
     const vue = vues[e.vue] || vues.inconnu;
     const ong = e.moi.connu ? ongletsDuRole() : [];
-    const defil = derniereVue === e.vue + JSON.stringify(e.arg) ? window.scrollY : 0;
+    // RGAA 8.3 et 8.5-8.6 : langue de la page, titre qui dit l'écran affiché
+    document.documentElement.lang = 'fr';
+    const libVue = (ongletsDuRole().find(o => o[0] === e.vue) || [])[1];
+    document.title = [libVue, C.param('titre', CONFIG.titre)].filter(Boolean).join(' — ');
+    const memeVue = derniereVue === e.vue + JSON.stringify(e.arg);
+    const defil = memeVue ? window.scrollY : 0;
+    // Même écran redessiné : les sections dépliées le restent
+    const ouverts = memeVue ? [...C.racine().querySelectorAll('#contenu details')].map(d => d.open) : [];
     C.racine().innerHTML = `<div class="entete">${bandeau()}` +
       (ong.length ? `<nav class="onglets" aria-label="Rubriques">${ong.map(([v, l]) => `<button type="button" data-vue="${v}"${v === e.vue ? ' aria-current="page"' : ''}>${C.esc(l)}</button>`).join('')}</nav>` : '') +
       `</div><main class="contenu" id="contenu">${vue.rendre()}</main>`;
+    if (ouverts.length) C.racine().querySelectorAll('#contenu details').forEach((d, i) => { if (ouverts[i]) d.open = true; });
+    // Hauteur de l'en-tête fixe : les colonnes collantes se placent juste dessous
+    const ent = C.racine().querySelector('.entete');
+    if (ent) document.documentElement.style.setProperty('--h-entete', ent.offsetHeight + 'px');
     if (vue.apres) vue.apres(C.racine());
     derniereVue = e.vue + JSON.stringify(e.arg);
     window.scrollTo(0, defil);
   }
-  function aller(vue, arg = {}) { C.etat.vue = vue; C.etat.arg = arg; rendre(); window.scrollTo(0, 0); }
+  // Changement d'écran : focus sur le titre du nouvel écran (annoncé par les lecteurs d'écran)
+  function aller(vue, arg = {}) {
+    C.etat.vue = vue; C.etat.arg = arg; rendre(); window.scrollTo(0, 0);
+    const h = C.racine().querySelector('#contenu h2');
+    if (h) { h.tabIndex = -1; h.focus({ preventScroll: true }); }
+  }
 
   // Relecture après chaque écriture et quand d'autres écrivent ; pas pendant une saisie ni une fenêtre ouverte
   let minuteur = null, enCours = false;
-  function rafraichir(delai = 250) {
+  // o.tables : tables à relire (toutes par défaut). o.rendre : true = redessiner ; false = relecture silencieuse
+  // (l'écran est déjà à jour après sa propre écriture) ; absent = redessiner seulement si les données ont changé
+  // (écritures des autres : relecture périodique, onRecords). Les demandes rapprochées sont regroupées.
+  let aRelire = null, forcer = false, siChange = false;
+  const empreinte = tables => tables.map(t => JSON.stringify(C.etat.doc[t] || [])).join('\u0001');
+  function rafraichir(delai = 250, o = {}) {
+    const tables = o.tables || C.TABLES;
+    aRelire = aRelire === null ? new Set(tables) : new Set([...aRelire, ...tables]);
+    if (o.rendre === true) forcer = true;
+    else if (o.rendre === undefined) siChange = true;
     clearTimeout(minuteur);
     minuteur = setTimeout(async () => {
       if (enCours) return rafraichir(400);
       enCours = true;
+      const liste = [...aRelire], doitRendre = forcer, surChangement = siChange;
+      aRelire = null; forcer = false; siChange = false;
       try {
-        await C.charger();
+        const avant = empreinte(liste);
+        await C.charger(liste);
+        const change = empreinte(liste) !== avant;
         const saisie = document.activeElement && document.activeElement.matches && document.activeElement.matches('input, textarea, select');
-        if (!saisie && !document.querySelector('.voile')) rendre();
+        if ((doitRendre || (surChangement && change)) && !saisie && !document.querySelector('.voile')) rendre();
       } finally { enCours = false; }
     }, delai);
   }
@@ -50,6 +79,8 @@
     });
     racine.addEventListener('change', ev => {
       const el = ev.target;
+      if (el.dataset && el.dataset.actionFichier && actions[el.dataset.actionFichier]) return actions[el.dataset.actionFichier](el, ev);
+      if (el.dataset && el.dataset.change && actions[el.dataset.change]) return actions[el.dataset.change](el, ev);
       if (el.dataset && el.dataset.col && actions.saisie) actions.saisie(el);
     });
   }

@@ -31,5 +31,7 @@ services:
     volumes:
       - donnees:/persist
       - ./custom.css:/grist/static/custom.css:ro
+      # Chargeur du widget servi localement : sans lui, Chrome bloque les appels du widget vers localhost (chargeur/LISEZMOI.md)
+      - ./chargeur:/grist/static/chargeur:ro
 volumes:
   donnees:

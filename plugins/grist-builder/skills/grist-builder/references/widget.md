@@ -3,48 +3,119 @@
 ## Architecture (celle du kit)
 
 - **Une page, un widget.** Le code (HTML, CSS, JS) est **stocké dans le document**, dans les options du
-  widget (`_html`, `_js`), et lancé par le *Custom widget builder* public de Grist Labs
-  (`https://gristlabs.github.io/grist-widget/custom-widget-builder/index.html`). Rien à héberger : le code
-  voyage dans le `.grist`. Le kit l'assemble (`module/build.js`) et le pousse (`outils/deployer-module.js`).
+  widget (`_html`, `_js`). Il est lancé par un **chargeur** : le *Custom widget builder* de Grist Labs. Rien
+  n'est à héberger : le code voyage dans le `.grist`. Le kit l'assemble (`module/build.js`) et le pousse
+  (`outils/deployer-module.js`).
 - **Accès complet** : `grist.ready({ requiredAccess: 'full' })`. Le widget lit et écrit avec les droits de
   la personne connectée ; ce sont les règles d'accès qui protègent, pas le JavaScript.
-- **Rattacher le widget à une table lisible par tous** (Parametres dans le kit) : Grist n'affiche pas un
+- **Rattacher le widget à une table lisible par tous** (Parametres dans le kit). Grist n'affiche pas un
   widget dont la table est fermée à l'utilisateur, et un compte non reconnu verrait une page vide.
+
+## Le chargeur : public ou local
+
+| Où | Chargeur | Pourquoi |
+|---|---|---|
+| Instance publique (getgrist.com, instance d'État) | Public `gristlabs.github.io/…/custom-widget-builder` (défaut du `.grist` livré) | Tout est public. `grist-plugin-api.js` ne parle qu'à la page Grist qui contient le widget : il marche avec n'importe quelle instance |
+| Grist local (`localhost`) | **Copie servie par le Grist local** (`grist-local/chargeur/`, choisie par `construire.js`) | Chrome **bloque les appels d'une page publique vers localhost** (protection « réseau local »), sans même le proposer : `net::ERR_FAILED` sur les pièces jointes |
+| Instance qui filtre github.io, ou chargeur tiers refusé | La même copie, hébergée sur l'instance ou par le client ; `construire.js --chargeur <url>` | Plan B seulement. Ne pas le proposer d'emblée |
+
+Les tests se lancent dans un **Chrome par défaut, sans lever cette protection**. Ne pas utiliser
+`--disable-features=LocalNetworkAccessChecks,…` : ces options masquent le problème que l'utilisateur
+rencontrera.
 
 ## Identité : le widget ne connaît pas l'utilisateur
 
 L'API du widget ne donne ni adresse ni rôle. Procédé du kit :
 1. à l'ouverture, le module ajoute une ligne à **Connexions** ;
 2. le **déclencheur** `user.Email` (formule appliquée à la création) y inscrit l'adresse réelle ;
-3. des formules y lisent le rôle et l'entité dans l'**annuaire** ;
+3. des formules y lisent le rôle, l'entité et l'identifiant du compte (`Compte`) dans l'**annuaire** ;
 4. la règle `rec.Email == user.Email` interdit d'écrire l'adresse d'un autre : pas d'usurpation.
+
 Ne pas mémoriser l'identité dans le navigateur : en changeant de compte dans le même onglet, elle resterait
 l'ancienne. Un compte en lecture seule ne peut pas écrire sa connexion : tout le monde doit être « Éditeur ».
+
+**Ne jamais écrire dans l'annuaire pour une action courante.** L'annuaire porte les droits : toute
+modification de cette table recharge le document chez tous les connectés. Acceptation des CGU,
+préférences, dernière visite : chacune dans sa propre table, écrite par un déclencheur `user.Email`.
 
 ## Lire, écrire, rafraîchir
 
 - `grist.docApi.fetchTable(t)` renvoie des **colonnes** ; les listes arrivent encodées `['L', …]`, les
-  erreurs `['E', …]` : décoder (`core.js`). Une table fermée par les règles lève une erreur : la traiter
-  comme vide.
-- Écrire par `grist.docApi.applyUserActions([...])`, puis **relire** : les formules ont changé.
-- `grist.onRecords` ne signale que la table du widget : relire aussi périodiquement (60 à 90 s) pour voir
-  les écritures des autres.
-- Ne pas redessiner pendant une saisie ou une fenêtre ouverte (le curseur saute).
+  erreurs `['E', …]`, et une cellule masquée par une règle qui dépend de la ligne vaut `['C']`. Décoder
+  (`core.js`). Une table fermée par les règles lève une erreur : la traiter comme vide.
+- **Relire le moins possible.** Après une écriture, `appliquer()` ne relit que la table écrite et celles qui
+  en dépendent (`dependances` dans `projet.config.js`). Relire toutes les tables à chaque clic (le comportement
+  d'origine du kit) rend une grille de notation inutilisable : plusieurs milliers de lignes et une page
+  redessinée à chaque clic.
+- **Ne pas redessiner ce qui est déjà à l'écran.** Les saisies (texte, bouton basculé sur place) s'écrivent avec
+  `{ rendre: false }` ; l'interface met à jour le DOM elle-même (compteurs, `aria-pressed`). Les boutons radio
+  qui changent un statut affiché redessinent.
+- **Redessiner seulement si les données ont changé**, pour les relectures périodiques (60 à 90 s) et
+  `grist.onRecords`, qui ne signale que la table du widget. Pas de redessin pendant une saisie ou une fenêtre
+  ouverte.
+- Quand il faut redessiner le même écran, **garder la position et les `<details>` ouverts**.
+- **Chaque écriture porte ses identifiants** dans l'élément qui la déclenche (`data-examen`,
+  `data-critere`…). Ne jamais écrire, après un délai, dans « l'élément affiché », qui a pu changer
+  entre-temps : c'est le bug classique du commentaire rattaché à la mauvaise fiche.
+- Une seule création à la fois par clé : deux clics rapides ne font pas deux fiches. Attendre les écritures
+  en cours avant une transmission.
 
 ## Pièces jointes
 
-- Déposer et lire avec le **jeton d'accès** du widget (`grist.docApi.getAccessToken`), vers
-  `/attachments?auth=…` ; l'en-tête **`X-Requested-With: XMLHttpRequest`** est exigé (sinon 401, affiché
-  « Failed to fetch »).
-- Lire les métadonnées une par une (`/attachments/<id>`) : la liste globale est fermée par les règles.
-- Les liens de téléchargement expirent en quelques minutes.
+**Méthode** (`core.lirePiece`) :
+- jeton du widget **en lecture seule** (`getAccessToken({ readOnly: true })`) ;
+- `fetch(baseUrl + '/attachments/<id>/download?auth=…', { credentials: 'omit' })` ;
+- **lire le statut** avant `blob()` ;
+- aperçu dans la page par `URL.createObjectURL`.
+
+Pour les métadonnées, lire `/attachments/<id>?auth=…` pièce par pièce, et garder les noms en cache.
+
+**Ne jamais mettre le jeton dans un `href`.** Il donne accès en écriture, il reste dans l'historique du
+navigateur et il expire au bout de quelques minutes.
+
+Pour un envoi (`POST /attachments?auth=…`), l'en-tête `X-Requested-With: XMLHttpRequest` est exigé :
+sans lui, Grist répond 401, que le navigateur affiche « Failed to fetch ».
+
+**Diagnostic d'un aperçu qui échoue** (« CORS », « Failed to fetch », « le serveur ne répond pas ») :
+
+| Symptôme | Cause | Remède |
+|---|---|---|
+| Tout marche en navigation normale, rien en navigation privée | La navigation normale est connectée en **propriétaire**, qui passe outre les règles | Tester sous le compte concerné, en local (connexion de test) |
+| **403** `Cannot access attachment` (ou 404 `Cannot access cell` avec l'indication de cellule) | Refus légitime : la ligne n'est pas lisible par ce compte (rattachement manquant) | Corriger les données ou la règle. **Ne pas ouvrir la table** |
+| Requête sans statut, « Failed to fetch », `net::ERR_FAILED`, **en local seulement** | Protection « réseau local » de Chrome : chargeur public et Grist sur localhost | Chargeur local (voir plus haut) |
+| 403 `Credentials not supported for cross-origin requests` | Requête envoyée avec des cookies (`credentials: 'include'`) ou un en-tête `Authorization` | `credentials: 'omit'`, jeton en paramètre |
+| 500 `Store '…' is not a valid and available store` | Document importé d'une instance à stockage externe | `reprise.md` |
+
+Le stockage externe ne change rien en fonctionnement normal : Grist lit le fichier côté serveur et le renvoie,
+sans redirection. Grist sert les fichiers avec `Content-Security-Policy: sandbox`, et Chrome refuse d'afficher
+un PDF dans un cadre à cette adresse : passer par un blob.
 
 ## Sécurité et qualité
 
-- **Échapper tout texte** venant du document avant de l'insérer en HTML (réponses, guides).
+- **Échapper tout texte** venant du document avant de l'insérer en HTML : réponses, guides, et contenus saisis
+  par des tiers dans un export (`html.escape` côté formule).
 - Bibliothèques externes : version figée **et empreinte SRI** (`integrity`) ; sinon le code chargé agit avec
   les droits de chaque utilisateur. Éviter les versions npm abandonnées (SheetJS : prendre `cdn.sheetjs.com`).
-- Classes CSS préfixées ou vérifiées : une classe réutilisée (`.aide` pour deux usages) casse la mise en page.
-- Tester dans un vrai navigateur (Playwright et Chrome installé : `tests-e2e/`), rôle par rôle.
+- **CSS préfixé ou vérifié.** Une classe réutilisée casse la mise en page. La racine du module porte la classe
+  `.formulaire` : aucune autre règle ne doit viser `.formulaire` ou `.formulaire label`.
+- Tester dans un vrai navigateur (Playwright, Chrome installé : `tests-e2e/`), rôle par rôle. Les outils
+  attendent que le module soit **prêt** (`Formulaire.core.etat.vue`) : le HTML du widget s'affiche avant
+  que son code ait fini de démarrer.
 - Les réseaux de collectivités filtrent parfois les CDN et les fonds de carte : prévoir un fonctionnement
   dégradé (le module marche sans carte).
+
+## Accessibilité (RGAA 4.1)
+
+Ce que le kit fait déjà :
+- langue `fr` et titre de page par écran (8.3, 8.5) ;
+- focus sur le titre à chaque changement d'écran ;
+- fenêtres modales : focus placé, maintenu, rendu à la fermeture, fond `inert` (7.1, 12.8) ;
+- messages en `role="status"` (7.5).
+
+À faire dans chaque écran :
+- une étiquette pour chaque champ, `aria-label` dans les tableaux (11.1) ;
+- `fieldset` et `legend` pour les boutons radio (11.5) ;
+- `aria-pressed` et `aria-expanded` pour les bascules ;
+- motif `tablist` pour les onglets (7.1).
+
+Contrôle sommaire : `node tests-e2e/rgaa.js` (axe-core, WCAG 2.1 A et AA, sur les onglets de chaque rôle).

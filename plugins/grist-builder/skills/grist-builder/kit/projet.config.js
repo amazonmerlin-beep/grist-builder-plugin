@@ -20,6 +20,9 @@ module.exports = {
   },
   // Tables que le module lit (une table fermée par les règles est lue comme vide)
   tablesModule: ['Parametres', 'Entites', 'Annuaire', 'Connexions', 'Reponses', 'Guides'],
+  // Après une écriture dans une table, le module relit aussi celles dont les formules en dépendent
+  // (sinon il ne relit que la table écrite) : { Reponses: ['Entites'] }
+  dependances: {},
   // Comptes de test du Grist local : [adresse, nom, rôle, entité]
   comptesTest: [
     ['admin@projet.test', 'Admin projet', 'admin', ''],

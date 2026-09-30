@@ -13,7 +13,9 @@ async function navigateur({ largeur = 1360, hauteur = 900 } = {}) {
   // Test LOCAL seulement : le builder (page publique github.io) appelle Grist sur localhost pour
   // les pièces jointes ; Chrome bloque ces appels « réseau local » par défaut. Sur getgrist.com ou
   // l'instance ANCT, les deux sont publics et la protection ne s'applique pas.
-  const b = await chromium.launch({ channel: 'chrome', headless: true, args: ['--disable-features=PrivateNetworkAccessSendPreflights,PrivateNetworkAccessRespectPreflightResults,BlockInsecurePrivateNetworkRequests,LocalNetworkAccessChecks,LocalNetworkAccessPermissionPrompt'] });
+  // Chrome tel qu'un utilisateur l'a : aucune protection levée. En local, le widget passe par le chargeur servi
+  // par Grist lui-même (construire.js) : sans cela, Chrome bloquerait ses appels vers localhost.
+  const b = await chromium.launch({ channel: 'chrome', headless: true });
   return { b, nouveau: async () => b.newContext({ viewport: { width: largeur, height: hauteur }, locale: 'fr-FR', acceptDownloads: true }) };
 }
 
@@ -59,7 +61,8 @@ async function trouverModule(page, delai = 40000) {
     for (const f of page.frames()) {
       try {
         if (await f.$('#app.formulaire')) {
-          await f.waitForFunction(() => !document.querySelector('#app').textContent.includes('Chargement'), null, { timeout: 30000 });
+          // Module prêt : identité connue et premier écran choisi (le HTML du widget s'affiche avant son code)
+          await f.waitForFunction(() => globalThis.Formulaire && Formulaire.core && Formulaire.core.etat.vue, null, { timeout: 30000 });
           return f;
         }
       } catch (e) { /* frame en cours de chargement */ }

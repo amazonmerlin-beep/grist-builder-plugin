@@ -1,8 +1,8 @@
 # grist-builder
 
-Plugin Claude Code pour mener un projet de **formulaire ou d'enquête sur Grist**, du besoin du client à la
-livraison du document : diagnostic de l'entrée, estimation en jours, arbitrages, construction, tests,
-guides, livraison `.grist`. Claude fabrique ; le consultant pilote le client.
+Plugin Claude Code pour mener un projet de **formulaire, d'enquête ou d'outil métier sur Grist**, du besoin du
+client à la livraison du document : diagnostic de l'entrée, reprise d'un document existant, estimation en jours,
+arbitrages, construction, tests, guides, livraison `.grist`. Claude fabrique ; le consultant pilote le client.
 
 ## Installer
 
@@ -35,10 +35,26 @@ vérifie et le signale s'il en manque.
 | Où | Quoi |
 |---|---|
 | `plugins/grist-builder/skills/grist-builder/SKILL.md` | Point d'entrée : phases, signaux d'alerte |
-| `…/references/` | Cadrage, estimation, arbitrages, MCP Grist, widget, permissions, données, livraison |
-| `…/kit/` | Socle testé : Grist local, construction scriptée, identité et règles d'accès, squelette du module, tests, guides, livraison |
+| `…/references/` | Cadrage, estimation, arbitrages, MCP Grist, widget, permissions, données (dont formulaire public par script), reprise d'un document existant, livraison |
+| `…/kit/` | Socle testé : Grist local et chargeur local du widget, construction scriptée (formulaire public compris), identité et règles d'accès, squelette du module (relecture ciblée, pièces jointes, fenêtres accessibles), tests par rôle dans Chrome par défaut, contrôle RGAA sommaire, partage nominatif, guides, livraison |
 | `docs/specs/` | Spécification |
 | `docs/tests/` | Scénarios de vérification du skill, sans et avec |
 
 Étalon des estimations : une enquête de 100 questions, 5 rôles, suivi, relances, synthèse, carte et guides
 (mission LAPI) = 2 jours de production à partir d'une entrée mûre.
+
+## Nouveautés 0.2.0 (retours de la mission DITND, 30/09/2026)
+
+- **Reprise d'un document existant** (`references/reprise.md`) : clonage en deux appels, quota de getgrist.com,
+  étude hors ligne du `.grist`, stockage externe des pièces jointes, reprise des données rejouable.
+- **Formulaire public construit et publié par script** (`schema/formulaire.js`, règle `user.ShareRef`).
+- **Pièces jointes dans le widget** : méthode sûre (jeton en lecture seule, sans cookies, statut vérifié) et
+  tableau de diagnostic des fausses erreurs « CORS ».
+- **Chargeur local du widget** : le Grist local sert sa copie, les tests tournent dans un Chrome par défaut.
+  La protection « réseau local » de Chrome n'est plus masquée.
+- **Fluidité** : relecture des seules tables concernées (`dependances`), pas de redessin des saisies, redessin
+  seulement si les données ont changé. Jamais d'écriture dans l'annuaire pour une action courante.
+- **Accessibilité** : langue et titre de page, fenêtres modales avec gestion du focus, contrôle axe-core
+  (`npm run test:rgaa`).
+- **Outils** : `npm run partager` (partage nominatif aligné sur l'annuaire), garde-fou des tests (Grist local
+  seulement, `DOC_COURANT` pour un document d'essais).

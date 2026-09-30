@@ -55,6 +55,8 @@ function jeux() {
       table: 'Reponses', colonnes: 'Entite,Modifie_par',
       regles: [[PROPRIO, '+RU'], ['', '-U', 'Colonnes système : jamais modifiées à la main']],
     },
+    // Formulaire public (schema/formulaire.js) sur une table fermée : ajouter à cette table, avant la règle finale,
+    // [ 'user.ShareRef', '+C-RUD', 'Formulaire public : création seulement, sans rien lire' ]
     {
       table: 'Reponses', colonnes: '*',
       regles: [

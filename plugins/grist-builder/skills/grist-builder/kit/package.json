@@ -12,7 +12,9 @@
     "test:acces": "node --test tests-e2e/acces.test.js",
     "test:parcours": "node --test --test-concurrency=1 tests-e2e/parcours.test.js",
     "guides": "node outils/charger-guides.js",
-    "livrer": "node outils/livrer.js"
+    "livrer": "node outils/livrer.js",
+    "partager": "node outils/partager.js",
+    "test:rgaa": "node tests-e2e/rgaa.js"
   },
   "devDependencies": {
     "playwright": "1.63.0"

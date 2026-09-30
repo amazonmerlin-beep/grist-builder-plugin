@@ -44,8 +44,8 @@
       moi = (await lireTable('Connexions')).find(c => c.id === r.retValues[0]) || null;
     } catch (e) { moi = null; }   // lecture seule (rôle « Lecteur ») : identité inconnue
     etat.moi = moi
-      ? { email: moi.Email || '', nom: moi.Nom || moi.Email || '', role: moi.Role || '', entite: moi.Entite || '', connu: !!moi.Connu }
-      : { email: '', nom: '', role: '', entite: '', connu: false };
+      ? { email: moi.Email || '', nom: moi.Nom || moi.Email || '', role: moi.Role || '', entite: moi.Entite || '', connu: !!moi.Connu, compte: moi.Compte || null }
+      : { email: '', nom: '', role: '', entite: '', connu: false, compte: null };
     return etat.moi;
   }
   const estAdmin = () => etat.moi && etat.moi.role === 'admin';
@@ -56,15 +56,28 @@
     if (/access|denied|Blocked|permission|refus/i.test(m)) return "Cette modification n'est pas autorisée pour votre compte.";
     return 'Enregistrement impossible : ' + m.slice(0, 160);
   }
-  async function appliquer(actions) {
+  // Tables à relire après une écriture : la table écrite et celles dont les formules en dépendent
+  // (CONFIG.dependances). Relire tout le document à chaque clic est inutile et lent.
+  function tablesTouchees(actions) {
+    const dep = L.CONFIG.dependances || {};
+    const s = new Set();
+    for (const a of actions) { const t = a[1]; if (!t) continue; s.add(t); (dep[t] || []).forEach(x => s.add(x)); }
+    return [...s].filter(x => TABLES.includes(x));
+  }
+  /**
+   * Applique des actions. o.rendre = false : l'écran est déjà à jour (saisie, bouton basculé sur place) ;
+   * les données sont relues sans redessiner la page.
+   */
+  async function appliquer(actions, o = {}) {
     try {
       const r = await grist.docApi.applyUserActions(actions);
-      if (L.app && L.app.rafraichir) L.app.rafraichir(400);   // relire : les formules ont changé
+      if (L.app && L.app.rafraichir) L.app.rafraichir(400, { tables: o.tables || tablesTouchees(actions), rendre: o.rendre !== false });
+      // (rendre: false → relecture silencieuse ; les changements des autres seront affichés à la relecture suivante)
       return r;
     } catch (e) { toast(messageErreur(e), 'erreur'); throw e; }
   }
-  const maj = (table, id, champs) => appliquer([['UpdateRecord', table, id, champs]]);
-  async function ajouter(table, champs) { const r = await appliquer([['AddRecord', table, null, champs]]); return r.retValues[0]; }
+  const maj = (table, id, champs, o) => appliquer([['UpdateRecord', table, id, champs]], o);
+  async function ajouter(table, champs, o) { const r = await appliquer([['AddRecord', table, null, champs]], o); return r.retValues[0]; }
 
   // ------------------------------------------------------------------ pièces jointes (jeton d'accès du widget)
   const jeton = () => grist.docApi.getAccessToken({ readOnly: false });
@@ -94,6 +107,25 @@
     }));
   }
 
+  /**
+   * Ouvre une pièce jointe dans la page. Jeton du widget en lecture seule, requête SANS cookie
+   * (credentials: 'omit' : avec cookies, Grist refuse les requêtes d'une autre origine et le navigateur
+   * affiche une fausse erreur CORS), statut vérifié : un refus (403) est dit comme tel.
+   * Renvoie { url (blob), type, nom } ou lève une erreur au message lisible.
+   */
+  async function lirePiece(id, nom) {
+    let t;
+    try { t = await grist.docApi.getAccessToken({ readOnly: true }); }
+    catch (e) { throw new Error("Jeton d'accès indisponible : rechargez la page."); }
+    let r;
+    try { r = await fetch(`${t.baseUrl}/attachments/${id}/download?auth=${encodeURIComponent(t.token)}`, { credentials: 'omit' }); }
+    catch (e) { throw new Error('Le serveur ne répond pas (réseau, ou blocage du navigateur).'); }
+    if (r.status === 403 || r.status === 404) throw new Error("Accès refusé à ce document : il n'est lisible que par les comptes autorisés (règles d'accès).");
+    if (!r.ok) throw new Error(`Téléchargement impossible (erreur ${r.status}).`);
+    const blob = await r.blob();
+    return { url: URL.createObjectURL(blob), type: blob.type || '', nom: nom || `document-${id}` };
+  }
+
   // ------------------------------------------------------------------ interface de base
   const esc = s => String(s === null || s === undefined ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
   const racine = () => document.getElementById('app');
@@ -107,22 +139,42 @@
     setTimeout(() => t.remove(), type === 'erreur' ? 7000 : 3500);
   }
   /** Fenêtre modale ; boutons : [{ libelle, valeur, classe }] ; renvoie la valeur du bouton (ou null). */
-  function fenetre(titre, contenu, { boutons = [{ libelle: 'Fermer', valeur: null, classe: 'secondaire' }] } = {}) {
+  function fenetre(titre, contenu, { boutons = [{ libelle: 'Fermer', valeur: null, classe: 'secondaire' }], large = false, avant = null } = {}) {
     return new Promise(resoudre => {
       const v = document.createElement('div');
       v.className = 'voile';
-      v.innerHTML = `<div class="fenetre" role="dialog" aria-modal="true" aria-labelledby="titre-fenetre">
+      v.innerHTML = `<div class="fenetre${large ? ' fenetre-large' : ''}" role="dialog" aria-modal="true" aria-labelledby="titre-fenetre">
         <h2 id="titre-fenetre">${esc(titre)}</h2><div class="corps">${contenu}</div>
         <div class="actions">${boutons.map((b, i) => `<button type="button" class="btn ${b.classe || ''}" data-i="${i}">${esc(b.libelle)}</button>`).join('')}</div></div>`;
-      const fermer = val => { v.remove(); document.removeEventListener('keydown', echap); resoudre(val); };
-      const echap = e => { if (e.key === 'Escape') fermer(null); };
+      // RGAA 7.1, 12.8 : focus placé dans la fenêtre, maintenu à l'intérieur (Tab), rendu à l'élément
+      // d'origine à la fermeture ; Échap ferme ; le reste de la page est inerte pendant l'ouverture
+      const origine = document.activeElement;
+      const app = document.getElementById('app');
+      const focusables = () => [...v.querySelectorAll('a[href], button:not([disabled]), input:not([disabled]), select, textarea, iframe, [tabindex]:not([tabindex="-1"])')];
+      const fermer = val => {
+        v.remove(); document.removeEventListener('keydown', clavier);
+        if (app) app.inert = false;
+        if (origine && origine.isConnected && origine.focus) origine.focus();
+        resoudre(val);
+      };
+      const clavier = e => {
+        if (e.key === 'Escape') return fermer(null);
+        if (e.key !== 'Tab') return;
+        const f = focusables();
+        if (!f.length) return;
+        if (e.shiftKey && document.activeElement === f[0]) { e.preventDefault(); f[f.length - 1].focus(); }
+        else if (!e.shiftKey && document.activeElement === f[f.length - 1]) { e.preventDefault(); f[0].focus(); }
+      };
       v.addEventListener('click', e => {
         const b = e.target.closest('[data-i]');
-        if (b) fermer(boutons[+b.dataset.i].valeur);
+        if (b) { const val = boutons[+b.dataset.i].valeur; if (!avant || avant(val) !== false) fermer(val); }
         else if (e.target === v) fermer(null);
       });
-      document.addEventListener('keydown', echap);
+      document.addEventListener('keydown', clavier);
       document.body.appendChild(v);
+      if (app) app.inert = true;
+      const premier = v.querySelector('.corps input, .corps textarea, .corps select') || v.querySelector('.actions .btn:not(.secondaire)') || v.querySelector('.actions .btn');
+      if (premier) premier.focus();
     });
   }
   const confirmer = (titre, texte, libelle = 'Confirmer') =>
@@ -130,6 +182,6 @@
 
   L.core = {
     TABLES, etat, charger, lireTable, param, identifier, estAdmin, appliquer, maj, ajouter, messageErreur,
-    televerser, infosPiecesJointes, esc, racine, toast, fenetre, confirmer,
+    televerser, infosPiecesJointes, lirePiece, esc, racine, toast, fenetre, confirmer,
   };
 })(globalThis.Formulaire = globalThis.Formulaire || {});

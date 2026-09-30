@@ -15,3 +15,22 @@ assortie de réserves ; conforme à `cadrage.md` (fourchette, jamais de chiffre 
 Kit : essai de bout en bout sur un Grist local séparé (port 8485) : construction en 1,6 s, 8 tests unitaires,
 6 tests de droits et 3 parcours Chrome verts, `.grist` produit et réimporté (6 tables, 3 réponses, 2 guides,
 30 règles, module présent).
+
+## Version 0.2.0 (30/09/2026) : retours de la mission DITND
+
+Quatre scénarios nouveaux. Un sous-agent par scénario a répondu d'abord avec la version 0.1.0 (avant), puis avec
+la 0.2.0 (après).
+
+| Scénario | 0.1.0 (avant) | 0.2.0 (après) |
+|---|---|---|
+| S5. Pièces jointes en « CORS » pour les évaluateurs | Blocage « réseau local » vu, sans remède en local ; ni cookies, ni statut | Diagnostic ordonné (propriétaire, 403 légitime, réseau local, cookies) ; `lirePiece` ; chargeur local ; Chrome par défaut |
+| S6. 29 notes par clic, CGU, 30 connectés | CGU hors de l'annuaire (déduit) ; « relire tout » | Table dédiée aux CGU ; relecture ciblée (`dependances`), `rendre: false`, redessin seulement si les données ont changé |
+| S7. Formulaire public sur table fermée | **Échec** : publication inconnue ; règle `not user.Moi…` → `+C` trop ouverte | Publication par script en trois étapes ; `user.ShareRef` → `+C-RUD` ; test anonyme ; partage nominatif |
+| S8. Reprise d'un document getgrist.com | **Échec** : pièces une à une (quota) ; stockage externe ignoré | Deux appels (`cloner.js`) ; stockage externe et correctif ; reprise rejouable ; lecteur tar |
+
+**Kit** : vérifié sur une copie fraîche, dans un Chrome par défaut avec le chargeur local.
+- 8 tests unitaires ;
+- 8 tests de droits, dont les pièces jointes réservées et le formulaire anonyme ;
+- 3 parcours ;
+- 0 violation d'accessibilité ;
+- `.grist` livré avec le chargeur public.

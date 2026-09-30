@@ -35,10 +35,33 @@ d'annuaire) ou **invitations** (chacun invité nommément, comme Éditeur ; lour
   n'est pas téléchargeable par les autres.
 - Un lecteur extérieur (partenaire, administration) : règles par ligne (réponses transmises, publication
   nominative) **et** par colonne (pas de données personnelles, pas de coordonnées exactes).
+- **Ne jamais écrire dans l'annuaire depuis le module pour une action courante** (CGU, préférences) : chaque
+  modification recharge la page de tous. Utiliser une table dédiée, écrite à sa propre adresse
+  (`newRec.Email == user.Email` → `+C`).
+- **Formulaire public** (déposants anonymes) sur une table fermée : la règle `user.ShareRef` → `+C-RUD` sur
+  cette table. L'envoi passe par le lien de partage du formulaire, qui crée des lignes sans rien pouvoir lire.
+  Ne pas écrire `not user.Moi.Role_effectif` → `+C` : tout compte connecté pourrait alors créer des lignes par
+  l'API. La publication se fait par script : voir `donnees.md`.
+- **Règles de création** : `newRec` voit les valeurs posées par les déclencheurs (`user.Email`) et les
+  formules. Exemple : `newRec.Evaluateur == user.Moi.id and user.Moi.id in newRec.Membres_autorises` → `+C`.
+  **Unicité** : une colonne calculée `Doublon` (`len(T.lookupRecords(A=$A, B=$B)) > 1`), et `not newRec.Doublon`
+  dans la règle.
+- **Suivre une référence** (`rec.Examen.Seance.Statut`) n'est pas possible dans une règle : poser une colonne
+  calculée (`Seance_statut = $Examen.Seance.Statut`) et la tester.
+- **Cellule masquée** : une règle de colonne **sans condition** fait disparaître la colonne ; une règle qui
+  **dépend de la ligne** la renvoie censurée, `['C']`, par l'API REST comme par `fetchTable`.
+- **Indépendance des avis** : chacun lit les siens, et ceux des autres seulement quand un statut le permet
+  (séance « En séance ») : règle sur une colonne calculée `Seance_statut`.
+- **Document partagé par lien** (`everyone@getgrist.com` éditeur) : il n'apparaît **pas** dans la liste de
+  documents des personnes. Partage nominatif aligné sur l'annuaire (`npm run partager`), ou envoi du lien.
 
 ## Tester (`tests-e2e/acces.test.js`)
 
 Sur le Grist local, la connexion de test donne une clé d'API par adresse : chaque rôle est testé par l'API,
-avec ses propres droits. Couvrir au moins : inconnu, désactivé, usurpation d'adresse, chaque rôle (lire,
+avec ses propres droits. **Jamais sur une instance distante, jamais sur un document que quelqu'un consulte** :
+les tests écrivent des données fictives (garde-fou du kit, et `DOC_COURANT` pour viser un document d'essais).
+Pièces jointes : un compte autorisé reçoit 200 sur `/attachments/<id>/download`, un compte non autorisé 403.
+Formulaire public : `POST /api/s/<clé>/tables/<T>/records` sans authentification crée la ligne ; la lecture
+par la même clé renvoie une liste vide. Couvrir au moins : inconnu, désactivé, usurpation d'adresse, chaque rôle (lire,
 modifier, ce qui est refusé), cloisonnement entre entités, gel après transmission. Calculer les attentes
 d'après les données (jamais de liste figée) et ne remettre à zéro que les entités de test.

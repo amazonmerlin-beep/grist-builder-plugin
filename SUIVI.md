@@ -64,6 +64,12 @@ Rôles du kit : `repondant` (rattaché à une entité), `pilote` (lit tout), `ad
 - [x] Validation (`claude plugin validate .` sans avertissement), push sur GitHub
 - [ ] Installation réelle par un collègue depuis GitHub (README)
 
+## Version 0.2.0 (30/09/2026)
+Retours de la mission DITND : `references/reprise.md` (nouveau), compléments dans widget, permissions, données
+(formulaire public), livraison, estimation, MCP ; kit : chargeur local, relecture ciblée, `lirePiece`, fenêtres
+accessibles, formulaire public par script, `partager`, `cloner`, lecteur tar, `rgaa.js`, garde-fou des tests.
+Vérification : `docs/tests/verification.md` (S5 à S8, avant et après).
+
 ## e) Prochaines actions
 1. Faire installer le plugin par un collègue (README) et recueillir ses retours.
 2. Ajouter au kit, si les projets le demandent : outil des comptes en masse, captures en série, jeu de démonstration (voir LAPI).

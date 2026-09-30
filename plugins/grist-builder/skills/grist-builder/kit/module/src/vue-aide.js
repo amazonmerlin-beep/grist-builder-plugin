@@ -8,7 +8,7 @@
 
   const guides = () => (e.doc.Guides || []).slice().sort((a, b) => (a.Ordre || 0) - (b.Ordre || 0));
   // « Vos guides » : ceux dont le premier public est votre rôle (l'administration DF lit aussi ceux de DF)
-  const pourMoi = g => { const p = (g.Public || [])[0]; const r = e.moi.role; return p === r || (r === 'admin' && p === 'df'); };
+  const pourMoi = g => (g.Public || [])[0] === e.moi.role;
   const courant = () => { const l = guides(); return l.find(g => g.Cle === e.arg.guide) || l.find(pourMoi) || l[0]; };
   const imageDiff = (nom, alt) => `<img data-image="${esc(nom)}" alt="${alt}" loading="lazy">`;
 
@@ -31,7 +31,7 @@
     rendre() {
       const l = guides();
       if (!l.length) {
-        return `<div class="colonne"><h2>Aide</h2><p>Aucun guide n'est disponible pour votre compte. Pour toute question : ${esc(C.param('contact_nom', 'Départements de France'))},
+        return `<div class="colonne"><h2>Aide</h2><p>Aucun guide n'est disponible pour votre compte. Pour toute question : ${esc(C.param('contact_nom', 'l’équipe du projet'))},
           <a href="mailto:${esc(C.param('contact_email'))}">${esc(C.param('contact_email'))}</a>.</p></div>`;
       }
       const g = courant();
@@ -45,7 +45,7 @@
           ${C.estAdmin() ? '<p class="discret petit">Les guides se modifient dans la table Guides des données brutes (texte au format Markdown, captures en pièces jointes).</p>' : ''}
         </nav>
         <article class="aide-texte">${g.Resume ? `<p class="aide-resume">${esc(g.Resume)}</p>` : ''}${rendreGuide(g)}
-          <p class="discret petit aide-contact">Une question ? ${esc(C.param('contact_nom', 'Départements de France'))} : <a href="mailto:${esc(C.param('contact_email'))}">${esc(C.param('contact_email'))}</a></p>
+          <p class="discret petit aide-contact">Une question ? ${esc(C.param('contact_nom', 'l’équipe du projet'))} : <a href="mailto:${esc(C.param('contact_email'))}">${esc(C.param('contact_email'))}</a></p>
         </article>
       </div>`;
     },

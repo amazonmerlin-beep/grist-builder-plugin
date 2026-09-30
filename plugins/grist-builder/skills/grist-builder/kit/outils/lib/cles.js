@@ -7,7 +7,8 @@ const { cleApiTest, Grist } = require('./grist');
 
 const BASE = process.env.GRIST_URL || `http://localhost:${process.env.GRIST_PORT || 8484}`;
 const CACHE = path.join(__dirname, '..', '..', 'grist-local', '.cles-test.json');
-const DOC_COURANT = path.join(__dirname, '..', '..', 'grist-local', 'doc-courant.json');
+// Document visé par les outils et les tests ; DOC_COURANT=grist-local/doc-essais.json pour tester sans toucher au document consulté
+const DOC_COURANT = process.env.DOC_COURANT ? path.resolve(process.env.DOC_COURANT) : path.join(__dirname, '..', '..', 'grist-local', 'doc-courant.json');
 const ADMIN = process.env.GRIST_ADMIN || 'proprietaire@projet.test';
 
 function lireCache() {

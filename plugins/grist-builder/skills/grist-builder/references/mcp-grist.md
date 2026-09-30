@@ -29,3 +29,4 @@ Le connecteur Grist de claude.ai (outils `grist_*`) agit **au nom du compte conn
 | Petite correction sur le document du client (paramètre, guide, ligne d'annuaire) | MCP |
 | Construction du formulaire livré, règles d'accès, tests | Scripts du kit sur Grist local, puis `.grist` importé chez le client |
 | Instance sans accès API (pas de clé) | Construire en local, livrer le `.grist` ; le MCP ou l'interface pour les retouches |
+| Pas de MCP, une clé d'API du client | API REST avec la clé (fichier `*.secret` ignoré par git). Sur getgrist.com gratuit, **3 000 appels par mois** : cloner en deux appels, étudier la copie hors ligne (`reprise.md`) |

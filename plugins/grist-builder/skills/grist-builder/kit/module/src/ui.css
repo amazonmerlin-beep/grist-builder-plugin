@@ -186,10 +186,6 @@ input[readonly], textarea[readonly], select[disabled], input[disabled] { backgro
 .fenetre { background: var(--c-fond); border-radius: 6px; max-width: 760px; width: 100%; padding: 20px 24px; box-shadow: 0 6px 24px rgba(0,0,0,.2); }
 .fenetre.large { max-width: 1100px; }
 .fenetre h2 { font-size: 18px; }
-.formulaire { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 12px 16px; }
-.formulaire label { display: flex; flex-direction: column; gap: 3px; font-size: 13px; font-weight: 600; }
-.formulaire label :is(input, select, textarea) { font-size: 15px; font-weight: 400; } /* sinon le champ hérite du libellé, en gras */
-.formulaire .plein { grid-column: 1 / -1; }
 .suggestions { border: 1px solid var(--c-bordure); border-radius: var(--rayon); max-width: 520px; margin-top: 2px; background: var(--c-fond); }
 .suggestions button { display: block; width: 100%; text-align: left; background: none; border: 0; padding: 6px 10px; cursor: pointer; }
 .suggestions button:hover, .suggestions button:focus { background: var(--c-fond-alt); }
