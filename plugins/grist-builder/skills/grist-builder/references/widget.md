@@ -60,6 +60,33 @@ préférences, dernière visite : chacune dans sa propre table, écrite par un d
 - Une seule création à la fois par clé : deux clics rapides ne font pas deux fiches. Attendre les écritures
   en cours avant une transmission.
 
+## Voir le nouveau sans recharger : veille, pastilles, changement d'identité
+
+`grist.onRecords` ne signale que la table du widget (Parametres) : les écritures des autres ne se voient qu'à
+la relecture périodique (90 s). Pour ce qui doit apparaître vite, le kit a une **veille**
+(`veille` dans `projet.config.js`) :
+- toutes les N secondes (20 par défaut), relecture des **quelques petites tables du rôle** qui font apparaître du
+  nouveau (demandes, dépôts, réponses transmises) ; redessin seulement si elles ont changé. Pas les grosses
+  tables : chaque relecture coûte un appel par table ;
+- **pastilles des onglets** : une vue déclare `A.pastilles[vue] = { compter, annonce }` (exemple dans
+  `vue-exemple.js`). Le nombre s'affiche sur l'onglet (`.pastille-onglet`, doublé d'un texte masqué lu par les
+  lecteurs d'écran), se met à jour sans redessiner l'écran, et une annonce (`role="status"`) signale une hausse ;
+- **changement d'identité** : la ligne de `Connexions` suit l'annuaire par ses formules. Relue par la veille
+  (rôles qui ne lisent que leur propre connexion, et inconnus), elle fait passer un compte accepté à ses
+  onglets sans recharger la page (`identiteChangee` : tout relire d'abord, les règles ont changé), et un compte
+  désactivé à l'écran d'accès.
+
+## Bouton « retour » du navigateur
+
+Chaque changement d'écran (`aller(vue, arg)`) pousse une entrée d'historique : le bouton ou le geste
+« retour » revient à l'écran précédent du module, ferme d'abord une fenêtre modale ouverte, et ne sort de Grist
+qu'une fois revenu au premier écran. L'entrée est poussée sur **le cadre du chargeur** (`window.parent`, même
+origine ; repli sur `window`), avec `replaceState` au démarrage et l'écoute de `popstate` sur ce même cadre.
+Pourquoi pas le cadre du module : le chargeur y écrit le module par `document.write`, et Chrome, au retour,
+recharge ce cadre au lieu d'y revenir. `aller(vue, arg, { historique: false })` change d'écran sans entrée
+(retour lui-même, changement d'identité). Test : `history.back()` sur la page (le `goBack()` de Playwright
+attend un chargement qui n'arrive pas).
+
 ## Pièces jointes
 
 **Méthode** (`core.lirePiece`) :
@@ -110,12 +137,34 @@ Ce que le kit fait déjà :
 - langue `fr` et titre de page par écran (8.3, 8.5) ;
 - focus sur le titre à chaque changement d'écran ;
 - fenêtres modales : focus placé, maintenu, rendu à la fermeture, fond `inert` (7.1, 12.8) ;
-- messages en `role="status"` (7.5).
+- messages en `role="status"` (7.5) ;
+- liens qui ouvrent une nouvelle fenêtre annoncés (13.2) : `core.signalerNouvellesFenetres(el)`, appelé après
+  chaque rendu et dans `fenetre()`, ajoute à tout `a[target=_blank]` un texte masqué « (nouvelle fenêtre) » et la
+  classe `nouvelle-fenetre` (pictogramme ↗ en CSS) ;
+- en-têtes de colonne `th scope="col"` (5.7), guides Markdown compris ;
+- en-têtes de tableau qui passent à la ligne sous 760 px, classe `.defil` pour un tableau large (10.4).
 
 À faire dans chaque écran :
 - une étiquette pour chaque champ, `aria-label` dans les tableaux (11.1) ;
 - `fieldset` et `legend` pour les boutons radio (11.5) ;
 - `aria-pressed` et `aria-expanded` pour les bascules ;
-- motif `tablist` pour les onglets (7.1).
+- motif `tablist` pour les onglets (7.1) ;
+- `th scope="col"` sur chaque en-tête de colonne ; `th scope="row"` pour l'en-tête d'une ligne (5.7) ;
+- tout tableau qui peut dépasser la largeur dans `<div class="defil">` : il défile seul, pas la page.
 
-Contrôle sommaire : `node tests-e2e/rgaa.js` (axe-core, WCAG 2.1 A et AA, sur les onglets de chaque rôle).
+Motifs utiles :
+- **Cellule codée** (abréviation, pastille de couleur, pictogramme) : l'abréviation visible est masquée aux
+  lecteurs d'écran, le libellé complet est lu à sa place :
+  `<span aria-hidden="true">P</span><span class="sr-only">Partiellement</span>`. Même chose pour un
+  pictogramme qui porte un sens (« avec commentaire »).
+- **Bouton icône** : `aria-label` explicite, qui dit l'action et son objet (« Commenter : question 12 »), et, si
+  la place le permet, un libellé visible court à côté de l'icône (« 💬 Commenter ») ; icône en
+  `aria-hidden="true"`. Un `title` seul ne suffit pas.
+
+Contrôles :
+- sommaire : `node tests-e2e/rgaa.js` (axe-core, WCAG 2.1 A et AA, sur les onglets de chaque rôle) ;
+- **zoom à 200 %** (10.4) : `node tests-e2e/zoom.js`. Une fenêtre de 640 px de large équivaut à un écran de
+  1280 px zoomé à 200 % ; pour chaque écran, le script compare la largeur du contenu du module (`scrollWidth`)
+  à sa largeur visible et cite les éléments qui dépassent. Ajouter les écrans hors onglets (fiche, fenêtre)
+  propres au projet. Les regarder aussi : un texte coupé ne se mesure pas ;
+- ce qu'aucun outil ne voit : un parcours au clavier seul, un lecteur d'écran (NVDA et Firefox).

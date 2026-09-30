@@ -54,6 +54,9 @@ d'annuaire) ou **invitations** (chacun invité nommément, comme Éditeur ; lour
   (séance « En séance ») : règle sur une colonne calculée `Seance_statut`.
 - **Document partagé par lien** (`everyone@getgrist.com` éditeur) : il n'apparaît **pas** dans la liste de
   documents des personnes. Partage nominatif aligné sur l'annuaire (`npm run partager`), ou envoi du lien.
+- **Espace d'équipe** (getgrist.com) : le document **hérite des droits de l'espace**, et tous les membres de
+  l'équipe l'ouvrent ; sans ligne d'annuaire, ils ne voient que l'écran d'accès. À l'inverse, un **invité** qui
+  ouvre l'accueil de l'équipe voit « Accès refusé » : lui donner le lien direct du document (`livraison.md`).
 
 ## Tester (`tests-e2e/acces.test.js`)
 

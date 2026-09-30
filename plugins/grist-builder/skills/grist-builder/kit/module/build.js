@@ -12,7 +12,7 @@ const ORDRE = ['core.js', 'markdown.js', 'app.js', 'vue-aide.js', 'vue-exemple.j
 const FACULTATIFS = new Set([]);
 
 const config = require('../projet.config');
-const CONFIG = { titre: config.titre, contactEmail: config.contactEmail, roles: config.roles, onglets: config.onglets, tablesModule: config.tablesModule, dependances: config.dependances || {} };
+const CONFIG = { titre: config.titre, contactEmail: config.contactEmail, roles: config.roles, onglets: config.onglets, tablesModule: config.tablesModule, dependances: config.dependances || {}, guidesEnFin: config.guidesEnFin || [], veille: config.veille || null };
 const version = require('../package.json').version + '+' + new Date().toISOString().slice(0, 16).replace(/[-:T]/g, '');
 const morceaux = [];
 for (const f of ORDRE) {

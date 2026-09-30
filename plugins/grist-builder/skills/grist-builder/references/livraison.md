@@ -17,10 +17,43 @@
   reconstruction ou écriture recharge la page de la personne qui regarde.
 - **Mesurer la fluidité** : compter les relectures (`fetchTable`) et les redessins, au repos et après un clic.
   Au repos : zéro. Après une saisie : la ou les tables concernées, sans redessin.
-- **Accessibilité sommaire** : `node tests-e2e/rgaa.js` (axe-core sur les onglets de chaque rôle). Viser zéro
-  violation. Consigner les points qu'un outil automatique ne voit pas (lecteur d'écran, zoom à 200 %).
+- **Accessibilité sommaire** : `node tests-e2e/rgaa.js` (axe-core sur les onglets de chaque rôle) et
+  `node tests-e2e/zoom.js` (zoom à 200 %, `widget.md`). Viser zéro violation et zéro débordement. Consigner les
+  points qu'un outil automatique ne voit pas (lecteur d'écran, clavier seul).
+- **Lire les résultats** : Node 24 n'écrit plus en TAP (`ok` / `not ok`) mais avec `✔` / `✖` et un bilan
+  `ℹ tests`, `ℹ pass`, `ℹ fail` : filtrer sur ces lignes, pas sur `^ok`.
+- **Bouton « retour »** : le tester avec `page.evaluate(() => history.back())` ; le `goBack()` de Playwright
+  attend un chargement qui n'arrive pas (le module change d'écran sans charger de page).
+
+## Essayer sur une instance réelle (getgrist.com, instance du client)
+
+- `construire.js` **supprime d'abord tout document de même nom** dans l'espace. Sur une instance réelle :
+  toujours un nom et une adresse distincts de la production (`--nom "… (essai)" --adresse <urlId>-essai`), un
+  espace d'essai, et `DOC_COURANT=grist-local/doc-<instance>.json` pour que le Grist local reste branché sur
+  son document.
+- Données : `outils/jeu-essai.js` (fictives, rejouables, `--retirer` ; `donnees.md`).
+- **Compter les appels** : `node -r ./outils/lib/compteur-appels.js outils/construire.js …` (et de même pour
+  chaque outil) affiche le nombre d'appels et tient le journal `grist-local/appels.log`, avec le total du mois.
+  Le plan gratuit de getgrist.com est limité à **3 000 appels par mois** ; une construction en coûte une
+  cinquantaine, un jeu d'essai moins de dix.
+- **Espace d'équipe de getgrist.com** :
+  - un document y **hérite des droits de l'espace** : tous les membres de l'équipe l'ouvrent. Absents de
+    l'annuaire, ils ne voient que l'écran d'accès ; le dire au client, ou retirer l'héritage (Gérer les
+    utilisateurs) ;
+  - **l'accueil de l'équipe est refusé aux invités** (« Accès refusé, vous n'avez pas accès aux documents de
+    cette organisation ») : toujours donner le **lien direct du document**, dans le message d'invitation et
+    dans le guide « obtenir un accès ».
 
 ## Documentation dans le document (phase 6)
+
+**Notice de confidentialité : un livrable à ne pas oublier.** Dès qu'il y a des comptes ou un formulaire
+public, il y a des données personnelles. Le kit en donne le gabarit (`guides/confidentialite.md` : responsable,
+finalités, données, base légale, durées, droits, destinataires, sous-traitants ; valeurs « à fixer ») ; le
+client (son délégué à la protection des données) la valide. Elle s'affiche dans la rubrique « Informations »
+de l'onglet Aide (`guidesEnFin` : confidentialité, puis les CGU en dernier) et en lien sur l'écran d'accès
+(`data-action="voir-guide"`). Le formulaire public porte une mention courte et l'adresse de la notice lisible
+sans compte (`donnees.md`). Dans un guide, `{{contact_email}}` (toute clé de Parametres) est remplacé par sa
+valeur, ou par « [contact_email à fixer] ».
 
 - Guides en Markdown (`guides/*.md`, en-tête `titre`, `public`, `ordre`, `resume`), chargés dans la table
   **Guides** (`npm run guides`), affichés dans l'onglet **Aide** ; chaque rôle ne lit que les guides de son
@@ -38,7 +71,8 @@
    du formulaire public, qui change à l'import) ; ajouter les administrateurs dans l'annuaire (un propriétaire
    absent de l'annuaire voit l'écran « compte non reconnu ») ; importer les comptes ; régler le partage (lien
    ou invitations, tout le monde « Éditeur ») ; partage nominatif pour que chacun trouve le document dans sa
-   liste (`npm run partager`) ; propriétaires. Le `.grist` livré utilise le chargeur public.
+   liste (`npm run partager`) ; propriétaires. Le `.grist` livré utilise le chargeur public. Messages
+   d'invitation et guides donnent le lien direct du document, jamais l'accueil de l'espace.
 3. Essai avec un compte de test par rôle, puis pilote avec deux ou trois entités avant l'ouverture.
 4. Passation : où est quoi, comment reconstruire, les décisions prises, les points ouverts.
 

@@ -66,3 +66,67 @@ test('pilotage : onglet Suivi, une ligne par entité', async () => {
   assert.equal(lignes, require('../schema/entites.json').length);
   await ctx.close();
 });
+
+test('compte inconnu : politique de confidentialité en fenêtre, contact renseigné, liens « nouvelle fenêtre » signalés', async t => {
+  if (!(config.guidesEnFin || []).includes('confidentialite')) return t.skip('pas de guide « confidentialite » en fin de liste');
+  const ctx = await nav.nouveau();
+  const { module } = await ouvrir(ctx, 'personne@ailleurs.test', 'Personne');
+  await cliquer(module, '[data-action="voir-guide"][data-cle="confidentialite"]');
+  await attendre(400);
+  const f = await module.evaluate(() => {
+    const v = document.querySelector('.fenetre');
+    return v && { texte: v.textContent, liens: [...v.querySelectorAll('a[target="_blank"]')].map(a => a.classList.contains('nouvelle-fenetre') && /nouvelle fenêtre/.test(a.textContent)) };
+  });
+  assert.ok(f, 'fenêtre ouverte');
+  assert.ok(!/\{\{/.test(f.texte), 'paramètres {{…}} remplacés');
+  assert.ok(f.texte.includes(await module.evaluate(() => Formulaire.core.param('contact_email'))), 'adresse de contact reprise des paramètres');
+  assert.ok(f.liens.length && f.liens.every(Boolean), 'liens externes signalés « nouvelle fenêtre »');
+  await ctx.close();
+});
+
+test('sans recharger : réponse transmise signalée au pilotage (pastille) ; compte accepté reconnu', async t => {
+  if (!(config.veille && config.veille.secondes)) return t.skip('pas de veille (projet.config.js)');
+  const NOUVEAU = 'parcours.direct@entite.test';
+  const [piloteEmail, piloteNom] = config.comptesTest.find(x => x[2] === 'pilote');
+  const autre = (await proprio.lignes(DOC, 'Reponses')).find(x => x.Entite !== REP_ENTITE);
+  const vieux = await proprio.sql(DOC, 'select id from Annuaire where Email = ?', [NOUVEAU]);
+  if (vieux.length) await proprio.appliquer(DOC, [['BulkRemoveRecord', 'Annuaire', vieux.map(x => x.id)]]);
+  await proprio.modifier(DOC, 'Reponses', [{ id: autre.id, Statut: 'Brouillon' }]);
+  const jusqua = async (f, max = 3 * config.veille.secondes * 1000) => { const t0 = Date.now(); while (Date.now() - t0 < max) { if (await f().catch(() => false)) return true; await attendre(1000); } return false; };
+  const E = await ouvrir(await nav.nouveau(), NOUVEAU, 'Parcours direct');
+  const P = await ouvrir(await nav.nouveau(), piloteEmail, piloteNom);
+  const pastille = () => P.module.evaluate(() => { const p = document.querySelector('.onglets [data-vue="suivi"] .pastille-onglet'); return p ? +p.textContent : 0; });
+  assert.equal(await E.module.evaluate(() => Formulaire.core.etat.vue), 'inconnu');
+  const p0 = await pastille();
+  let cpt = null;
+  try {
+    await proprio.modifier(DOC, 'Reponses', [{ id: autre.id, Statut: 'Transmis' }]);
+    assert.ok(await jusqua(async () => (await pastille()) === p0 + 1), 'pastille « Suivi » augmentée sans recharger');
+    [cpt] = await proprio.ajouter(DOC, 'Annuaire', [{ Email: NOUVEAU, Nom: 'Parcours direct', Role: 'repondant', Entite: autre.Entite, Actif: true }]);
+    assert.ok(await jusqua(() => E.module.evaluate(() => Formulaire.core.etat.moi.connu)), 'compte accepté reconnu sans recharger');
+    assert.ok(await jusqua(() => E.module.evaluate(() => !!document.querySelector('.onglets [data-vue="reponse"]'))), 'onglets du rôle affichés');
+  } finally {
+    await proprio.modifier(DOC, 'Reponses', [{ id: autre.id, Statut: 'Brouillon' }]);
+    if (cpt) await proprio.appliquer(DOC, [['RemoveRecord', 'Annuaire', cpt]]);
+  }
+});
+
+test('retour du navigateur : revient à l’écran précédent du module, ferme d’abord une fenêtre, sans quitter Grist', async () => {
+  const [email, nom] = config.comptesTest.find(x => x[2] === 'admin');
+  const { page, module: m } = await ouvrir(await nav.nouveau(), email, nom);
+  const ecran = () => m.evaluate(() => Formulaire.core.etat.vue + ' ' + JSON.stringify(Formulaire.core.etat.arg));
+  const url0 = page.url();
+  const depart = await ecran();
+  await cliquer(m, '[data-vue="aide"]'); await attendre(400);
+  await cliquer(m, '.aide-liste [data-action="guide"]:not([aria-current])'); await attendre(400);
+  const guide = await ecran();
+  assert.match(guide, /^aide \{"guide":/);
+  // Le goBack() de Playwright attend un chargement qui n'arrive pas : history.back() dans la page
+  await page.evaluate(() => history.back()); await attendre(800);
+  assert.equal(await ecran(), 'aide {}');
+  await m.evaluate(() => { Formulaire.core.fenetre('Essai', '<p>Fenêtre ouverte</p>'); });
+  await page.evaluate(() => history.back()); await attendre(800);
+  assert.equal(await m.evaluate(() => !!document.querySelector('.voile')), false, 'fenêtre fermée par « retour »');
+  assert.equal(await ecran(), depart);
+  assert.equal(page.url(), url0, 'la page Grist ne change pas');
+});

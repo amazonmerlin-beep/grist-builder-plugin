@@ -184,7 +184,7 @@ input[readonly], textarea[readonly], select[disabled], input[disabled] { backgro
 /* ------------------------------------------------ fenêtres */
 .voile { position: fixed; inset: 0; background: rgba(30,33,36,.4); display: flex; align-items: flex-start; justify-content: center; padding: 40px 16px; z-index: 40; overflow-y: auto; }
 .fenetre { background: var(--c-fond); border-radius: 6px; max-width: 760px; width: 100%; padding: 20px 24px; box-shadow: 0 6px 24px rgba(0,0,0,.2); }
-.fenetre.large { max-width: 1100px; }
+.fenetre.large, .fenetre-large { max-width: 1100px; }
 .fenetre h2 { font-size: 18px; }
 .suggestions { border: 1px solid var(--c-bordure); border-radius: var(--rayon); max-width: 520px; margin-top: 2px; background: var(--c-fond); }
 .suggestions button { display: block; width: 100%; text-align: left; background: none; border: 0; padding: 6px 10px; cursor: pointer; }
@@ -268,3 +268,12 @@ input[readonly], textarea[readonly], select[disabled], input[disabled] { backgro
   .impression-seule { display: block !important; }
 }
 .impression-seule { display: none; }
+
+/* Texte lu par les lecteurs d'écran seulement */
+.sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
+/* Pastille d'un onglet : nombre d'éléments nouveaux ou à traiter (le nombre est aussi lu, en texte masqué) */
+.pastille-onglet { display: inline-block; min-width: 18px; padding: 0 5px; margin-left: 4px; border-radius: 9px; background: var(--c-erreur); color: #fff; font-size: 11px; font-weight: 700; line-height: 18px; text-align: center; vertical-align: 1px; }
+/* Lien qui ouvre une nouvelle fenêtre (RGAA 13.2) : pictogramme visible, texte lu par les lecteurs d'écran */
+a.nouvelle-fenetre:not(.btn)::after { content: " \2197"; font-size: .85em; }
+/* Zoom à 200 % (RGAA 10.4) : les en-têtes de tableau passent à la ligne ; un tableau large va dans .defil */
+@media (max-width: 760px) { .tableau th { white-space: normal; } }

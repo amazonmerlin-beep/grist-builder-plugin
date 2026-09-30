@@ -2,5 +2,8 @@ node_modules/
 module/dist/
 grist-local/.cles-test.json
 grist-local/doc-courant.json
+# Autres documents visés (DOC_COURANT : essais, instance réelle) et journal des appels
+grist-local/doc-*.json
+grist-local/appels.log
 livrables/*.grist
 tests-e2e/captures/

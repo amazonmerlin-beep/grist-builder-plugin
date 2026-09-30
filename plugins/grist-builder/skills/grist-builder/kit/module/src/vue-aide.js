@@ -9,11 +9,16 @@
   const guides = () => (e.doc.Guides || []).slice().sort((a, b) => (a.Ordre || 0) - (b.Ordre || 0));
   // « Vos guides » : ceux dont le premier public est votre rôle (l'administration DF lit aussi ceux de DF)
   const pourMoi = g => (g.Public || [])[0] === e.moi.role;
-  const courant = () => { const l = guides(); return l.find(g => g.Cle === e.arg.guide) || l.find(pourMoi) || l[0]; };
+  const courant = () => { const l = guides(); return l.find(g => g.Cle === e.arg.guide) || l.find(g => pourMoi(g) && !enFin(g)) || l.find(g => !enFin(g)) || l[0]; };
   const imageDiff = (nom, alt) => `<img data-image="${esc(nom)}" alt="${alt}" loading="lazy">`;
 
-  /** Contenu d'un guide, images à résoudre ensuite par resoudreImages. */
-  const rendreGuide = g => M.versHtml(g.Contenu || '', { image: imageDiff });
+  /** Contenu d'un guide, images à résoudre ensuite par resoudreImages. {{cle}} : valeur du paramètre (« [cle à fixer] » s'il manque). */
+  const avecParametres = t => String(t || '').replace(/\{\{(\w+)\}\}/g, (_, k) => C.param(k) || `[${k} à fixer]`);
+  const rendreGuide = g => M.versHtml(avecParametres(g.Contenu), { image: imageDiff });
+  // Guides toujours en fin de liste, rubrique « Informations », dans l'ordre de CONFIG.guidesEnFin
+  // (informations légales : confidentialité, puis les CGU en dernier)
+  const EN_FIN = (L.CONFIG && L.CONFIG.guidesEnFin) || [];
+  const enFin = g => EN_FIN.includes(g.Cle);
 
   async function resoudreImages(racine, g) {
     const imgs = [...racine.querySelectorAll('img[data-image]')];
@@ -38,7 +43,8 @@
       const som = M.sommaire(g.Contenu);
       return `<div class="page-aide">
         <nav class="aide-liste" aria-label="Guides">
-          ${[['Vos guides', l.filter(pourMoi)], [l.some(pourMoi) ? 'Autres guides' : 'Guides', l.filter(x => !pourMoi(x))]].filter(([, xs]) => xs.length).map(([titre, xs]) => `
+          ${[['Vos guides', l.filter(x => pourMoi(x) && !enFin(x))], [l.some(x => pourMoi(x) && !enFin(x)) ? 'Autres guides' : 'Guides', l.filter(x => !pourMoi(x) && !enFin(x))],
+            ['Informations', l.filter(enFin).sort((a, b) => EN_FIN.indexOf(a.Cle) - EN_FIN.indexOf(b.Cle))]].filter(([, xs]) => xs.length).map(([titre, xs]) => `
           <p class="aide-rubrique">${titre}</p>
           <ul>${xs.map(x => `<li><button type="button" data-action="guide" data-cle="${esc(x.Cle)}"${x.id === g.id ? ' aria-current="page"' : ''}>${esc(x.Titre)}</button></li>`).join('')}</ul>`).join('')}
           ${som.length > 1 ? `<p class="aide-rubrique">Dans ce guide</p><ul class="aide-sommaire">${som.map(s => `<li><a href="#${s.ancre}" data-action="ancre" data-ancre="${s.ancre}">${esc(s.texte)}</a></li>`).join('')}</ul>` : ''}
@@ -59,6 +65,12 @@
   A.actions.ancre = el => {
     const cible = C.racine().querySelector('#' + CSS.escape(el.dataset.ancre));
     if (cible) cible.scrollIntoView({ block: 'start' });
+  };
+  // Un guide dans une fenêtre, depuis un écran sans onglet Aide (compte non reconnu, demande d'accès)
+  A.actions['voir-guide'] = el => {
+    const g = guides().find(x => x.Cle === el.dataset.cle);
+    if (g) C.fenetre(g.Titre, `<div class="aide-texte">${rendreGuide(g)}</div>`, { large: true });
+    else C.toast('Document indisponible.', 'erreur');
   };
 
   L.aide = { guides, rendreGuide, resoudreImages };

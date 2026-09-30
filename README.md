@@ -36,12 +36,38 @@ vérifie et le signale s'il en manque.
 |---|---|
 | `plugins/grist-builder/skills/grist-builder/SKILL.md` | Point d'entrée : phases, signaux d'alerte |
 | `…/references/` | Cadrage, estimation, arbitrages, MCP Grist, widget, permissions, données (dont formulaire public par script), reprise d'un document existant, livraison |
-| `…/kit/` | Socle testé : Grist local et chargeur local du widget, construction scriptée (formulaire public compris), identité et règles d'accès, squelette du module (relecture ciblée, pièces jointes, fenêtres accessibles), tests par rôle dans Chrome par défaut, contrôle RGAA sommaire, partage nominatif, guides, livraison |
+| `…/kit/` | Socle testé : Grist local et chargeur local du widget, construction scriptée (formulaire public compris), identité et règles d'accès, squelette du module (relecture ciblée, veille et pastilles, bouton retour, pièces jointes, fenêtres accessibles), tests par rôle dans Chrome par défaut, contrôles RGAA et zoom, partage nominatif, guides et notice de confidentialité, jeu d'essai, livraison |
 | `docs/specs/` | Spécification |
 | `docs/tests/` | Scénarios de vérification du skill, sans et avec |
 
 Étalon des estimations : une enquête de 100 questions, 5 rôles, suivi, relances, synthèse, carte et guides
 (mission LAPI) = 2 jours de production à partir d'une entrée mûre.
+
+## Contribuer
+
+Issues et pull requests bienvenues : https://github.com/amazonmerlin-beep/grist-builder-plugin/issues. Le skill
+propose lui-même, une fois et avec votre accord, d'en ouvrir une après un défaut corrigé ou une idée
+réutilisable (section « Contribuer au plugin » de `SKILL.md`). Contenu généralisé : jamais de données, noms,
+adresses ou identifiants d'un client. Licence MIT.
+
+## Nouveautés 0.3.0 (retours de la mission DITND, 30/09/2026 au soir)
+
+- **Bouton « retour » du navigateur** : il revient à l'écran précédent du module (historique poussé sur le cadre
+  du chargeur) et ferme d'abord une fenêtre ouverte.
+- **Voir le nouveau sans recharger** : veille ciblée par rôle (`veille` dans `projet.config.js`), pastilles
+  d'onglets avec annonce, compte accepté qui passe à ses onglets sans recharger la page.
+- **Formulaire public** : réglages des questions posés sur la colonne. Sinon l'éditeur de Grist affiche
+  « Aucun choix configuré ». `corriger-formulaire.js` répare un document existant ; modèle
+  `schema/formulaire.exemple.js`.
+- **Accessibilité** : liens « nouvelle fenêtre » annoncés, `th scope="col"`, tableaux au zoom à 200 %,
+  contrôle `npm run test:zoom`, motifs (cellule codée, bouton icône) dans `references/widget.md`.
+- **Aide** : rubrique « Informations » en fin de liste (`guidesEnFin`), `{{cle}}` remplacé par le paramètre,
+  guide ouvert en fenêtre depuis l'écran d'accès, gabarit de **notice de confidentialité** (livrable).
+- **Outils** : `jeu-essai.js` (jeu fictif pour une instance réelle, PDF générés, `--retirer`), `lib/pdf.js`,
+  `lib/xlsx.js`, `lib/compteur-appels.js` (appels comptés, quota de getgrist.com), `construire.js --adresse`.
+- **Références** : essai sur une instance réelle (document de même nom supprimé, espace d'équipe et invités),
+  Node 24 sans TAP, `history.back()` dans Playwright, nouveaux signaux d'alerte, section « Contribuer au
+  plugin » (issue ou pull request, avec accord, contenu généralisé).
 
 ## Nouveautés 0.2.0 (retours de la mission DITND, 30/09/2026)
 

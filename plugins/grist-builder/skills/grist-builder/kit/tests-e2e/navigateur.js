@@ -25,8 +25,8 @@ async function ouvrir(contexte, email, nom) {
   const page = await contexte.newPage();
   const cible = `${BASE}/o/docs/doc/${doc.docId}`;
   await page.goto(`${BASE}/test/login?username=${encodeURIComponent(email)}&name=${encodeURIComponent(nom || email)}&next=${encodeURIComponent(cible)}`);
-  // Grist réécrit l'adresse avec l'identifiant fixe (urlId) posé par construire.js
-  await page.waitForURL(u => String(u).includes(doc.docId.slice(0, 12)) || String(u).includes('/doc/' + config.urlId), { timeout: 30000 });
+  // Grist réécrit l'adresse avec l'identifiant fixe (urlId) posé par construire.js (--adresse, sinon celui de projet.config.js)
+  await page.waitForURL(u => String(u).includes(doc.docId.slice(0, 12)) || String(u).includes('/doc/' + (doc.urlId || config.urlId)), { timeout: 30000 });
   // Désactive les astuces de Grist pour ce compte (elles recouvrent la page), puis recharge
   const fait = await page.evaluate(async () => {
     const r = await fetch('/api/orgs/docs', { method: 'PATCH', headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },

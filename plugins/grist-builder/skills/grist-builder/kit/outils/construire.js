@@ -1,8 +1,10 @@
 'use strict';
 // Construit de zéro le document du projet : tables, formules, déclencheurs, données de base, guides,
 // page du module (widget personnalisé), formulaire public (si schema/formulaire.js), règles d'accès, partage. Tout vient de projet.config.js et schema/.
-// Usage : node outils/construire.js [--nom "…"] [--partage lien|invitations] [--proprietaire adresse]…
+// Usage : node outils/construire.js [--nom "…"] [--adresse urlId] [--partage lien|invitations] [--proprietaire adresse]…
 // Par défaut : Grist local. Sur un autre serveur : GRIST_URL=… GRIST_API_KEY=… GRIST_ORG=… node outils/construire.js
+// ATTENTION : tout document de même nom dans l'espace est d'abord supprimé. Sur une instance réelle, toujours
+// un nom et une adresse (--adresse) distincts de la production, et DOC_COURANT vers un fichier à part.
 const fs = require('fs');
 const path = require('path');
 const { client, ecrireDocCourant, ADMIN, BASE } = require('./lib/cles');
@@ -19,14 +21,16 @@ const { execFileSync } = require('child_process');
 const CHARGEUR_PUBLIC = 'https://gristlabs.github.io/grist-widget/custom-widget-builder/index.html';
 const CHARGEUR_LOCAL = `${BASE}/v/local/chargeur/custom-widget-builder/index.html`;
 // Formulaire public facultatif : schema/formulaire.js exporte { TABLE, TITRE, SECTIONS } (references/donnees.md)
-const FORMULAIRE = fs.existsSync(path.join(__dirname, '..', 'schema', 'formulaire.js')) ? require('../schema/formulaire') : null;
+const { formulaire: lireFormulaire, champsFormulaire, actionColonnes, mise_en_page } = require('./lib/formulaire');
+const FORMULAIRE = lireFormulaire();
 
 function args() {
   const a = process.argv.slice(2);
-  const o = { nom: config.nom, espace: config.espace, partage: 'lien', proprietaires: [], chargeur: /localhost|127\.0\.0\.1/.test(BASE) ? 'local' : 'public' };
+  const o = { nom: config.nom, espace: config.espace, partage: 'lien', proprietaires: [], urlId: config.urlId, chargeur: /localhost|127\.0\.0\.1/.test(BASE) ? 'local' : 'public' };
   for (let i = 0; i < a.length; i++) {
     if (a[i] === '--nom') o.nom = a[++i];
     else if (a[i] === '--espace') o.espace = a[++i];
+    else if (a[i] === '--adresse') o.urlId = a[++i];   // adresse fixe distincte (document d'essai sur une instance réelle)
     else if (a[i] === '--partage') o.partage = a[++i];
     else if (a[i] === '--proprietaire') o.proprietaires.push(a[++i].toLowerCase());
     else if (a[i] === '--chargeur') o.chargeur = a[++i];
@@ -47,33 +51,22 @@ function lienFormulaire(docId, sectionId) {
 
 /** Crée et publie le formulaire décrit par schema/formulaire.js ; renvoie { sectionRef, lien }. */
 async function construireFormulaire(g, doc, ref) {
-  const { TABLE, TITRE, SECTIONS } = FORMULAIRE;
+  const { TABLE, TITRE } = FORMULAIRE;
   const [t] = await g.sql(doc, 'select id from _grist_Tables where tableId = ?', [TABLE]);
   const rf = await g.appliquer(doc, [['CreateViewSection', t.id, 0, 'form', null, null]]);
   const form = rf.retValues[0];
   const anciens = await g.sql(doc, 'select id from _grist_Views_section_field where parentId = ?', [form.sectionRef]);
   if (anciens.length) await g.appliquer(doc, [['BulkRemoveRecord', '_grist_Views_section_field', anciens.map(x => x.id)]]);
-  const cols = TABLES.find(x => x.id === TABLE).colonnes;
-  const champs = SECTIONS.flat().filter(e => e.col);
-  const opts = e => {
-    const c = cols.find(x => x.id === e.col);
-    if (!c) throw new Error(`Formulaire : colonne inconnue ${e.col}`);
-    const w = {};
-    if (e.requis) w.formRequired = true;
-    if (e.question) w.question = e.question;
-    if (e.lignes) Object.assign(w, { formTextFormat: 'multiline', formTextLineCount: e.lignes });
-    if (c.type === 'Choice' && ((c.options || {}).choices || []).length <= 6) w.formSelectFormat = 'radio';
-    return JSON.stringify(w);
-  };
+  const champs = champsFormulaire();
+  // Réglages des questions sur les colonnes, champs sans réglages propres (voir lib/formulaire.js)
+  await g.appliquer(doc, [actionColonnes(ref)]);
   const rc = await g.appliquer(doc, [['BulkAddRecord', '_grist_Views_section_field', champs.map(() => null), {
     parentId: champs.map(() => form.sectionRef), colRef: champs.map(e => ref(TABLE, e.col)),
-    parentPos: champs.map((_, i) => i + 1), widgetOptions: champs.map(opts),
+    parentPos: champs.map((_, i) => i + 1), widgetOptions: champs.map(() => ''),
   }]]);
   const ids = Object.fromEntries(champs.map((e, i) => [e.col, rc.retValues[0][i]]));
   const uid = () => crypto.randomUUID();
-  const noeud = e => (e.col ? { id: uid(), type: 'Field', leaf: ids[e.col] } : { id: uid(), type: 'Paragraph', text: e.texte, alignment: e.centre ? 'center' : 'left', children: [] });
-  const [entete, ...sections] = SECTIONS;
-  const mise = { id: uid(), type: 'Layout', children: [...entete.map(noeud), ...sections.map(s => ({ id: uid(), type: 'Section', children: s.map(noeud) })), { id: uid(), type: 'Submit' }] };
+  const mise = mise_en_page(ids);
   // Publication : ligne de partage, page rattachée, section marquée formulaire publié
   const rs = await g.appliquer(doc, [['AddRecord', '_grist_Shares', null, { linkId: uid(), options: '{"publish":true}' }]]);
   const [page] = await g.sql(doc, 'select id from _grist_Pages where viewRef = ?', [form.viewRef]);
@@ -108,7 +101,7 @@ const cibleRef = c => (/^Ref(List)?:(.+)$/.exec(c.type) || [])[2];
   const doc = await g.creerDoc(ws.id, o.nom);
   etape(`Document créé : ${doc} dans l'espace « ${o.espace} »`);
   // Adresse fixe, conservée d'une reconstruction à l'autre : /o/docs/doc/<urlId>
-  try { await g.req('PATCH', `/api/docs/${doc}`, { urlId: config.urlId }); } catch (e) { etape('Adresse fixe indisponible : ' + e.message); }
+  try { await g.req('PATCH', `/api/docs/${doc}`, { urlId: o.urlId }); } catch (e) { etape('Adresse fixe indisponible : ' + e.message); }
 
   // Réglages du document
   await g.appliquer(doc, [['UpdateRecord', '_grist_DocInfo', 1, { timezone: 'Europe/Paris', documentSettings: JSON.stringify({ locale: 'fr-FR', currency: 'EUR' }) }]]);
@@ -117,7 +110,7 @@ const cibleRef = c => (/^Ref(List)?:(.+)$/.exec(c.type) || [])[2];
   const creees = new Set();
   for (const t of TABLES) {
     // Colonnes de données, y compris celles à déclencheur (leur formule est posée en passe 3)
-    const cols = t.colonnes.filter(c => (!estFormule(c) || c.declencheur) && (!cibleRef(c) || creees.has(cibleRef(c))));
+    const cols = t.colonnes.filter(c => (!estFormule(c) || c.declencheur) && (!cibleRef(c) || creees.has(cibleRef(c)) || cibleRef(c) === t.id));
     await g.appliquer(doc, [['AddTable', t.id, cols.map(c => ({ id: c.id, isFormula: false, ...infoColonne(c) }))]]);
     creees.add(t.id);
   }
@@ -206,6 +199,6 @@ const cibleRef = c => (/^Ref(List)?:(.+)$/.exec(c.type) || [])[2];
   const [nb] = await g.sql(doc, "select (select count(*) from _grist_Tables where tableId not like '_grist%') as tables, (select count(*) from _grist_Views) as pages, (select count(*) from _grist_ACLRules) as regles");
   etape(`Contrôle : ${JSON.stringify(nb)}`);
 
-  ecrireDocCourant({ docId: doc, sectionId: sectionRef, viewId: viewRef, formSectionId: formulaire && formulaire.sectionRef, lienFormulaire: formulaire && formulaire.lien, nom: o.nom, base: BASE, construitLe: new Date().toISOString(), dureeSecondes: (Date.now() - t0) / 1000 });
-  console.log(`\nTerminé en ${((Date.now() - t0) / 1000).toFixed(1)} s. Document : ${BASE}/o/docs/doc/${doc}`);
+  ecrireDocCourant({ docId: doc, urlId: o.urlId, sectionId: sectionRef, viewId: viewRef, formSectionId: formulaire && formulaire.sectionRef, lienFormulaire: formulaire && formulaire.lien, nom: o.nom, base: BASE, construitLe: new Date().toISOString(), dureeSecondes: (Date.now() - t0) / 1000 });
+  console.log(`\nTerminé en ${((Date.now() - t0) / 1000).toFixed(1)} s. Document : ${BASE}/o/${process.env.GRIST_ORG || 'docs'}/doc/${o.urlId || doc}`);
 })().catch(e => { console.error('ÉCHEC :', e.message); if (e.corps) console.error(JSON.stringify(e.corps).slice(0, 2000)); process.exit(1); });

@@ -8,7 +8,7 @@
       "name": "grist-builder",
       "source": "./plugins/grist-builder",
       "description": "Mener un projet de formulaire, d'enquête ou d'outil métier Grist, du besoin à la livraison : méthode, estimation, reprise d'un document existant, règles de construction et socle technique.",
-      "version": "0.2.0"
+      "version": "0.3.0"
     }
   ],
   "metadata": {

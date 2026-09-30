@@ -14,7 +14,8 @@
     "guides": "node outils/charger-guides.js",
     "livrer": "node outils/livrer.js",
     "partager": "node outils/partager.js",
-    "test:rgaa": "node tests-e2e/rgaa.js"
+    "test:rgaa": "node tests-e2e/rgaa.js",
+    "test:zoom": "node tests-e2e/zoom.js"
   },
   "devDependencies": {
     "playwright": "1.63.0"

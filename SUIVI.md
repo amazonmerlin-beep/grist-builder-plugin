@@ -70,9 +70,20 @@ Retours de la mission DITND : `references/reprise.md` (nouveau), compléments da
 accessibles, formulaire public par script, `partager`, `cloner`, lecteur tar, `rgaa.js`, garde-fou des tests.
 Vérification : `docs/tests/verification.md` (S5 à S8, avant et après).
 
+## Version 0.3.0 (01/10/2026)
+Retours de la mission DITND (30/09 au soir). Kit : bouton retour du navigateur (historique du cadre du
+chargeur), veille par rôle, pastilles d'onglets, compte accepté sans recharger (`moiDepuis`), réglages du
+formulaire public sur les colonnes (`lib/formulaire.js`, `corriger-formulaire.js`, `formulaire.exemple.js`),
+`signalerNouvellesFenetres`, `th scope`, CSS zoom 200 % (`.sr-only`, `.fenetre-large` corrigée), `zoom.js`,
+aide (`guidesEnFin`, `{{cle}}`, `voir-guide`), gabarit `guides/confidentialite.md`, `jeu-essai.js`, `lib/pdf.js`,
+`lib/xlsx.js`, `lib/compteur-appels.js`, `construire.js --adresse` (adresse notée dans doc-courant.json et
+suivie par les tests). Références : donnees, widget, livraison, reprise, permissions, cadrage ; SKILL.md :
+10 signaux d'alerte, section « Contribuer au plugin ». Vérification : `docs/tests/verification.md`.
+
 ## e) Prochaines actions
 1. Faire installer le plugin par un collègue (README) et recueillir ses retours.
 2. Ajouter au kit, si les projets le demandent : outil des comptes en masse, captures en série, jeu de démonstration (voir LAPI).
+3. Essayer la section « Contribuer au plugin » sur un vrai projet (première issue proposée par le skill).
 
 ## Notes
 - Essais du kit dans `essai/` (ignoré par git), Grist local sur le port 8485 pour ne pas gêner LAPI.

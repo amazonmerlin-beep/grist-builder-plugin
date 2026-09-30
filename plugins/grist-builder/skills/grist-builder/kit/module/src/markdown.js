@@ -73,7 +73,7 @@
         i += 2;
         const corps = [];
         while (i < lignes.length && /^\s*\|/.test(lignes[i])) corps.push(cellules(lignes[i++]));
-        out.push(`<div class="defil"><table class="tableau"><thead><tr>${entetes.map(c => `<th>${enLigne(c, opt)}</th>`).join('')}</tr></thead><tbody>${corps.map(r => `<tr>${entetes.map((_, k) => `<td>${enLigne(r[k] || '', opt)}</td>`).join('')}</tr>`).join('')}</tbody></table></div>`);
+        out.push(`<div class="defil"><table class="tableau"><thead><tr>${entetes.map(c => `<th scope="col">${enLigne(c, opt)}</th>`).join('')}</tr></thead><tbody>${corps.map(r => `<tr>${entetes.map((_, k) => `<td>${enLigne(r[k] || '', opt)}</td>`).join('')}</tr>`).join('')}</tbody></table></div>`);
         continue;
       }
       if ((m = RE_PUCE.exec(l)) && m[1].length < 2) {

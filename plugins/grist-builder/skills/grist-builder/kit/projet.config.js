@@ -18,6 +18,22 @@ module.exports = {
     pilote: [['suivi', 'Suivi'], ['aide', 'Aide']],
     admin: [['suivi', 'Suivi'], ['aide', 'Aide']],
   },
+  // Onglet Aide : guides placés en fin de liste, dans une rubrique « Informations », dans cet ordre
+  // (clés des guides ; « cgu » si le projet a des conditions d'utilisation)
+  guidesEnFin: ['confidentialite', 'cgu'],
+  // Veille : relecture rapide, par rôle, des tables qui font apparaître du nouveau sans recharger la page
+  // (compte accepté, réponse transmise). Petites tables seulement : chaque relecture est un appel par table.
+  // « Connexions » pour les rôles qui ne lisent que leur propre connexion : un compte accepté ou désactivé
+  // change alors d'écran de lui-même. Supprimer la clé (ou secondes: 0) pour s'en passer.
+  veille: {
+    secondes: 20,
+    tables: {
+      inconnu: ['Connexions'],
+      repondant: ['Connexions', 'Reponses'],
+      pilote: ['Reponses'],
+      admin: ['Reponses'],
+    },
+  },
   // Tables que le module lit (une table fermée par les règles est lue comme vide)
   tablesModule: ['Parametres', 'Entites', 'Annuaire', 'Connexions', 'Reponses', 'Guides'],
   // Après une écriture dans une table, le module relit aussi celles dont les formules en dépendent

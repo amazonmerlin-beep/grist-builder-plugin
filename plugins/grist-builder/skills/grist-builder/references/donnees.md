@@ -34,16 +34,21 @@ widget ; règles ; partage. Le document est **jetable** : on le reconstruit plut
 ## Formulaire natif publié (par script)
 
 Un formulaire Grist est une section `form` sur la table cible. Il se publie sans l'interface, en trois étapes.
+Le kit le fait d'après `schema/formulaire.js` (modèle : `schema/formulaire.exemple.js`) :
+`{ TABLE, TITRE, SECTIONS }`, la première liste de `SECTIONS` étant l'en-tête, chacune des suivantes une partie ;
+un élément vaut `{ texte }` (Markdown) ou `{ col, requis?, question?, lignes? }`.
 
 1. **Créer la section** : `['CreateViewSection', <tableRef>, 0, 'form', null, null]` → `{ viewRef, sectionRef }`.
    Supprimer les champs créés d'office, puis ajouter les siens :
-   - `BulkAddRecord _grist_Views_section_field` avec `parentId`, `colRef`, `parentPos` et `widgetOptions` ;
-   - options d'un champ :
-     - `question` : libellé (sinon celui de la colonne) ;
-     - `formRequired` ;
-     - `formTextFormat: 'multiline'` et `formTextLineCount` ;
-     - `formSelectFormat: 'radio'` ;
-   - la description d'une colonne sert d'aide sous la question.
+   `BulkAddRecord _grist_Views_section_field` avec `parentId`, `colRef`, `parentPos` et `widgetOptions: ''`.
+   **Les réglages des questions vont sur la colonne** (`widgetOptions` de `_grist_Tables_column`, avec ses
+   `choices`), pas sur le champ :
+   - `question` : libellé (sinon celui de la colonne) ;
+   - `formRequired` ;
+   - `formTextFormat: 'multiline'` et `formTextLineCount` ;
+   - `formSelectFormat: 'radio'`.
+
+   La description d'une colonne sert d'aide sous la question.
 2. **Mise en page** (`layoutSpec`, en JSON) :
    `{type:'Layout', children:[{type:'Paragraph', text:'# Titre'}, {type:'Section', children:[{type:'Field', leaf:<id du champ>}, …]}, {type:'Submit'}]}`.
    Les paragraphes sont en Markdown.
@@ -60,11 +65,30 @@ formulaire. La noter dans `Parametres`. Elle change à chaque import.
 **En local**, `GRIST_FORCE_LOGIN` impose une connexion même pour ouvrir le formulaire ; sur l'instance, il est
 public. Le formulaire n'a pas de questions conditionnelles : parcours linéaire, explications dans le texte.
 
+**Piège : « Aucun choix configuré » dans l'éditeur du formulaire.** Un champ de formulaire qui porte ses
+propres réglages (`formRequired`, `question`…, même `{}`) cesse de lire ceux de sa colonne, liste de choix
+comprise. Le formulaire publié s'affiche bien, mais l'éditeur de Grist montre « Aucun choix configuré » sur
+chaque question à choix, et le client croit le formulaire cassé. D'où la règle ci-dessus, qui est aussi ce que
+fait Grist quand on règle une question à la main ; un choix ajouté plus tard à la colonne apparaît alors dans
+le formulaire. Le kit l'applique (`outils/lib/formulaire.js`) ; `node outils/corriger-formulaire.js` corrige
+un document déjà construit, repris ou livré, sans le reconstruire.
+
+**Mention de confidentialité** : le formulaire public collecte des données personnelles. Mettre en fin de
+formulaire une mention courte (finalité, contact pour les droits) et l'adresse de la notice complète, lisible
+sans compte (site du client) : le guide « confidentialite » du document n'est pas accessible aux déposants
+anonymes (`livraison.md`).
+
 **Collecter en une fois** : si les informations servent plus tard (publication sur un site, fiche), les
 demander dès le formulaire de dépôt, dans une partie dédiée, plutôt que dans un second formulaire. Un second
 formulaire qui doit retrouver le dossier obligerait à exposer la liste des dossiers.
 
-## Données de démonstration
+## Données de démonstration et d'essai
 
-Un script à part (voir LAPI `outils/jeu-demo.js`) : fictives, vraisemblables (auteurs, dates étalées),
-jamais touchées par les tests (qui ne remettent à zéro que leurs entités).
+- **Démonstration** (Grist local, atelier) : un script à part (voir LAPI `outils/jeu-demo.js`) ; données
+  fictives, vraisemblables (auteurs, dates étalées), jamais touchées par les tests (qui ne remettent à zéro que
+  leurs entités).
+- **Essai sur une instance réelle** (getgrist.com, instance du client), avec de vrais comptes :
+  `node outils/jeu-essai.js [--admin <adresse>] [--repondant <adresse>]`. Entités et lignes « ESSAI »
+  inventées, PDF générés marqués « document fictif » (`outils/lib/pdf.js`, sans dépendance) si la table a une
+  colonne de pièces jointes ; moins de dix appels ; rejouable, `--retirer` pour tout enlever. À adapter au
+  modèle du projet (table, clé, valeurs). Jamais de données réelles dans un document d'essai.

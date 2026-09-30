@@ -43,10 +43,14 @@
       const r = await grist.docApi.applyUserActions([['AddRecord', 'Connexions', null, { Version: version }]]);
       moi = (await lireTable('Connexions')).find(c => c.id === r.retValues[0]) || null;
     } catch (e) { moi = null; }   // lecture seule (rôle « Lecteur ») : identité inconnue
-    etat.moi = moi
-      ? { email: moi.Email || '', nom: moi.Nom || moi.Email || '', role: moi.Role || '', entite: moi.Entite || '', connu: !!moi.Connu, compte: moi.Compte || null }
-      : { email: '', nom: '', role: '', entite: '', connu: false, compte: null };
+    etat.moi = moiDepuis(moi);
     return etat.moi;
+  }
+  /** Identité d'après la ligne de connexion (ses formules suivent l'annuaire : un compte accepté devient connu). */
+  function moiDepuis(c) {
+    return c
+      ? { email: c.Email || '', nom: c.Nom || c.Email || '', role: c.Role || '', entite: c.Entite || '', connu: !!c.Connu, compte: c.Compte || null, ligne: c.id }
+      : { email: '', nom: '', role: '', entite: '', connu: false, compte: null, ligne: null };
   }
   const estAdmin = () => etat.moi && etat.moi.role === 'admin';
 
@@ -138,6 +142,14 @@
     z.appendChild(t);
     setTimeout(() => t.remove(), type === 'erreur' ? 7000 : 3500);
   }
+  /** RGAA 13.2 : tout lien qui ouvre une nouvelle fenêtre l'annonce (texte lu et pictogramme visible). */
+  function signalerNouvellesFenetres(el) {
+    el.querySelectorAll('a[target="_blank"]:not([data-nf])').forEach(a => {
+      a.dataset.nf = '1';
+      a.classList.add('nouvelle-fenetre');
+      if (!/nouvelle fenêtre/i.test(a.textContent)) a.insertAdjacentHTML('beforeend', '<span class="sr-only"> (nouvelle fenêtre)</span>');
+    });
+  }
   /** Fenêtre modale ; boutons : [{ libelle, valeur, classe }] ; renvoie la valeur du bouton (ou null). */
   function fenetre(titre, contenu, { boutons = [{ libelle: 'Fermer', valeur: null, classe: 'secondaire' }], large = false, avant = null } = {}) {
     return new Promise(resoudre => {
@@ -171,6 +183,7 @@
         else if (e.target === v) fermer(null);
       });
       document.addEventListener('keydown', clavier);
+      signalerNouvellesFenetres(v);
       document.body.appendChild(v);
       if (app) app.inert = true;
       const premier = v.querySelector('.corps input, .corps textarea, .corps select') || v.querySelector('.actions .btn:not(.secondaire)') || v.querySelector('.actions .btn');
@@ -181,7 +194,7 @@
     fenetre(titre, `<p>${texte}</p>`, { boutons: [{ libelle: 'Annuler', valeur: false, classe: 'secondaire' }, { libelle, valeur: true }] });
 
   L.core = {
-    TABLES, etat, charger, lireTable, param, identifier, estAdmin, appliquer, maj, ajouter, messageErreur,
-    televerser, infosPiecesJointes, lirePiece, esc, racine, toast, fenetre, confirmer,
+    TABLES, etat, charger, lireTable, param, identifier, moiDepuis, estAdmin, appliquer, maj, ajouter, messageErreur,
+    televerser, infosPiecesJointes, lirePiece, esc, racine, toast, fenetre, confirmer, signalerNouvellesFenetres,
   };
 })(globalThis.Formulaire = globalThis.Formulaire || {});

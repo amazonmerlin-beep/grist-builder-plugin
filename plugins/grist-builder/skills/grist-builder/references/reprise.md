@@ -12,6 +12,9 @@ instance.
   - `GET /api/docs/<id>/attachments/archive?format=tar` renvoie toutes les pièces jointes en un seul
     fichier.
 - **Ne pas télécharger les pièces une par une** : un appel par fichier.
+- **Compter** : précharger `outils/lib/compteur-appels.js` devant chaque outil
+  (`node -r ./outils/lib/compteur-appels.js outils/cloner.js <docId>`) : nombre d'appels affiché, journal
+  `grist-local/appels.log` avec le total du mois.
 - **Clé d'API** : dans un fichier ignoré par git (`*.secret`), jamais affichée, jamais copiée dans un livrable.
 - **Données personnelles** (CV, adresses) : le clone reste sur le poste. Ne pas le mettre dans un dépôt.
 
@@ -60,6 +63,11 @@ lequel prend `C:` pour un hôte distant sous Git Bash.
 - **Valeurs explicites** : dates et auteurs d'origine l'emportent sur les déclencheurs. Exception : une
   colonne à déclencheur qui dépend d'une **autre** colonne à déclencheur est recalculée et écrase la valeur
   posée (voir `donnees.md`).
+- **Exports tableur** (`.xlsx` d'un export Grist ou Excel, archive d'une campagne précédente, liste de comptes) :
+  `outils/lib/xlsx.js`, lecteur sans dépendance (`lireFeuille(fichier, feuille?)` → `{ entetes, lignes }`).
+  Il lit les chaînes, nombres et booléens, et la valeur enregistrée des formules ; pas les classeurs chiffrés.
+  Une reprise d'appoint (données absentes de l'ancien document) ne crée que ce qui manque et propose un mode
+  `--essai` (bilan sans écrire).
 - **Tests de reprise** : bilan chiffré (lignes par table), contrôle des doublons, échantillon ouvert dans le
   module.
 - **Instance cible** (instance d'État, par exemple) : mêmes scripts avec `GRIST_URL` et `GRIST_API_KEY`. Refaire

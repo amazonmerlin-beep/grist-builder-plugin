@@ -39,9 +39,15 @@
   A.vues.suivi = {
     rendre() {
       const reps = (e.doc.Reponses || []).slice().sort((a, b) => String(a.Entite).localeCompare(String(b.Entite)));
+      // En-têtes th scope="col" (RGAA 5.7) ; tableau large dans .defil : il défile seul au zoom à 200 %
       return `<div class="large"><h2>Suivi des réponses</h2>
-        <table class="tableau"><thead><tr><th>Entité</th><th>Statut</th>${QUESTIONS.map(q => `<th>${esc(q.libelle)}</th>`).join('')}</tr></thead>
-        <tbody>${reps.map(r => `<tr><td>${esc(nomEntite(r.Entite))}</td><td>${esc(r.Statut)}</td>${QUESTIONS.map(q => `<td>${esc(r[q.col])}</td>`).join('')}</tr>`).join('')}</tbody></table></div>`;
+        <div class="defil"><table class="tableau"><thead><tr><th scope="col">Entité</th><th scope="col">Statut</th>${QUESTIONS.map(q => `<th scope="col">${esc(q.libelle)}</th>`).join('')}</tr></thead>
+        <tbody>${reps.map(r => `<tr><td>${esc(nomEntite(r.Entite))}</td><td>${esc(r.Statut)}</td>${QUESTIONS.map(q => `<td>${esc(r[q.col])}</td>`).join('')}</tr>`).join('')}</tbody></table></div></div>`;
     },
+  };
+  // Pastille de l'onglet Suivi : réponses transmises, annoncées quand il en arrive (veille, projet.config.js)
+  A.pastilles.suivi = {
+    compter: () => (e.doc.Reponses || []).filter(r => r.Statut === 'Transmis').length,
+    annonce: k => (k > 1 ? `${k} nouvelles réponses transmises.` : 'Nouvelle réponse transmise.'),
   };
 })(globalThis.Formulaire = globalThis.Formulaire || {});

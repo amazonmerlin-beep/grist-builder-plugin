@@ -21,7 +21,7 @@ finalité déclarée.
 4. **Questionnaire** : combien de questions, quels parcours selon les réponses, des tableaux à plusieurs lignes (inventaire, liste d'équipements), des pièces jointes ?
 5. **Niveaux** : une réponse par entité, ou plusieurs (une entité a plusieurs systèmes, sites, projets) ?
 6. **Restitutions** : exports suffisants, ou synthèse, carte, indicateurs dans le document ?
-7. **Données personnelles** : noms, courriels, téléphones ? Durée de conservation ? Publication (nominative, agrégée, refus) ?
+7. **Données personnelles** : noms, courriels, téléphones ? Durée de conservation ? Publication (nominative, agrégée, refus) ? Qui valide la notice de confidentialité (livrable, `livraison.md`) ?
 8. **Instance Grist** : laquelle (instance publique, du client, getgrist.com) ? Mode de connexion ? L'instance envoie-t-elle des courriels ?
 9. **Calendrier** : ouverture, clôture, relances, date de la restitution.
 10. **Comptes** : liste des adresses disponible ? Au format tableur ?

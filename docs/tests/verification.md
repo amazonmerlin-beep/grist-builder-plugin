@@ -34,3 +34,39 @@ la 0.2.0 (après).
 - 3 parcours ;
 - 0 violation d'accessibilité ;
 - `.grist` livré avec le chargeur public.
+
+## Version 0.3.0 (01/10/2026) : retours de la mission DITND, 30/09 au soir
+
+Portage des améliorations génériques du projet DITND (rien de propre au client). Vérifié sur deux copies
+fraîches du kit, Grist local séparé (port 8486, compose `grist-kit-verif`, supprimé ensuite), Chrome par défaut.
+
+| Contrôle | Kit tel que livré | Kit avec formulaire public (`formulaire.exemple.js` activé) |
+|---|---|---|
+| Construction | 1,6 à 2,0 s | 2,0 s, 47 appels comptés (`compteur-appels.js`) |
+| Tests unitaires | 8 / 8 | 8 / 8 |
+| Tests de droits | 7 / 7, 1 sauté (pas de formulaire) | 8 / 8, dont l'envoi anonyme |
+| Parcours Chrome | 6 / 6 | 6 / 6 |
+| axe-core (7 écrans) | 0 violation | 0 violation |
+| Zoom 200 % (7 écrans, fenêtre de 640 px) | 0 débordement | 0 débordement |
+
+Parcours nouveaux : politique de confidentialité en fenêtre depuis l'écran d'accès (`{{contact_email}}` remplacé,
+liens « nouvelle fenêtre » signalés) ; pastille « Suivi » qui augmente sans recharger et compte accepté reconnu
+sans recharger ; bouton retour (`history.back()`), fenêtre fermée d'abord, adresse Grist inchangée.
+
+Contrôles à la main (Playwright) :
+- **Pastille** : pilote ouvert, `jeu-essai.js` lancé à côté (lignes ajoutées par l'API) : pastille « Suivi »
+  de 1 à 3 en 19 s, texte lu « (3) », annonce « 2 nouvelles réponses transmises. », sans rechargement.
+- **Éditeur du formulaire** : ancien comportement simulé (réglages sur les champs) : « Aucun choix configuré »
+  affiché, choix absents ; après `corriger-formulaire.js`, et après une construction neuve : 0 occurrence,
+  boutons radio « Brouillon » / « Transmis » visibles, 0 champ avec réglages propres.
+- **Jeu d'essai** : 3 entités et lignes fictives, 3 PDF générés (valides, 2 pages, téléchargés en 200),
+  6 appels ; `--retirer` enlève tout ; rejouable.
+- **`--adresse`** : document d'essai à sa propre adresse, `doc-courant.json` inchangé.
+- **`zoom.js`** : un élément de 900 px injecté est détecté (916 px pour 622 px visibles), un tableau large dans
+  `.defil` ne l'est pas.
+
+Défaut trouvé pendant la vérification et corrigé : avec `--adresse`, les tests Chrome attendaient l'adresse de
+`projet.config.js` ; l'adresse est désormais notée dans `doc-courant.json` et suivie par `navigateur.js`. Autre
+correction : la classe `fenetre-large` de `core.fenetre()` n'avait pas de style (`.fenetre.large` seulement).
+
+`claude plugin validate .` : validation réussie, sans avertissement.

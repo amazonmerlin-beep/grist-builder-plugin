@@ -19,7 +19,7 @@ test('listes à puces et numérotées, second niveau, lignes de suite', () => {
 
 test('tableaux, citations, séparateurs', () => {
   const h = M.versHtml('| Rôle | Voit |\n|---|---|\n| DF | tout |\n| DGGN | publiable |\n\n> **À savoir** : rien.\n\n---');
-  assert.match(h, /<thead><tr><th>Rôle<\/th><th>Voit<\/th><\/tr><\/thead><tbody><tr><td>DF<\/td><td>tout<\/td><\/tr><tr><td>DGGN<\/td><td>publiable<\/td><\/tr><\/tbody>/);
+  assert.match(h, /<thead><tr><th scope="col">Rôle<\/th><th scope="col">Voit<\/th><\/tr><\/thead><tbody><tr><td>DF<\/td><td>tout<\/td><\/tr><tr><td>DGGN<\/td><td>publiable<\/td><\/tr><\/tbody>/);
   assert.match(h, /<blockquote><p><b>À savoir<\/b> : rien\.<\/p><\/blockquote>/);
   assert.match(h, /<hr>$/);
 });
