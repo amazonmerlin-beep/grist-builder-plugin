@@ -31,5 +31,6 @@ finalité déclarée.
 - Écrire la **finalité** en trois lignes avec le client, puis dériver les restitutions attendues ; chaque question doit servir une restitution.
 - Transformer les thèmes en questions fermées quand c'est possible (choix, nombres, oui/non) ; garder les réponses libres pour ce qui ne se compte pas.
 - Marquer chaque question : obligatoire ou non, parcours concerné, rôle qui la remplit.
-- Soumettre au client la liste des **questions ajoutées** par rapport à son document : il les valide.
+- Soumettre au client la liste des **questions ajoutées** par rapport à son document : il les valide. Une
+  question sans usage dans l'outil ni source écrite se retire (`donnees.md`, « Ne demander que ce qui sert »).
 - Livrable du cadrage : une note (finalité, publics, restitutions) et le **catalogue des questions** au format du kit.

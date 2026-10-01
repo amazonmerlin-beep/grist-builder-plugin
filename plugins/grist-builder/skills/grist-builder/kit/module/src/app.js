@@ -11,6 +11,9 @@
   const libelleRole = r => (CONFIG.roles[r] || {}).libelle || 'Compte non reconnu';
   const ongletsDuRole = () => (C.etat.moi && CONFIG.onglets[C.etat.moi.role]) || [];
   const vueParDefaut = () => (ongletsDuRole()[0] || ['inconnu'])[0];
+  // Onglet surligné : celui de la vue, ou celui dont elle dépend (vue.onglet) : une fiche ouverte depuis une
+  // liste garde l'onglet de la liste, sans fil d'Ariane
+  const ongletDe = v => (vues[v] && vues[v].onglet) || v;
 
   function bandeau() {
     const m = C.etat.moi, esc = C.esc;
@@ -24,14 +27,14 @@
     const ong = e.moi.connu ? ongletsDuRole() : [];
     // RGAA 8.3 et 8.5-8.6 : langue de la page, titre qui dit l'écran affiché
     document.documentElement.lang = 'fr';
-    const libVue = (ongletsDuRole().find(o => o[0] === e.vue) || [])[1];
+    const libVue = (ongletsDuRole().find(o => o[0] === ongletDe(e.vue)) || [])[1];
     document.title = [libVue, C.param('titre', CONFIG.titre)].filter(Boolean).join(' — ');
     const memeVue = derniereVue === e.vue + JSON.stringify(e.arg);
     const defil = memeVue ? window.scrollY : 0;
     // Même écran redessiné : les sections dépliées le restent
     const ouverts = memeVue ? [...C.racine().querySelectorAll('#contenu details')].map(d => d.open) : [];
     C.racine().innerHTML = `<div class="entete">${bandeau()}` +
-      (ong.length ? `<nav class="onglets" aria-label="Rubriques">${ong.map(([v, l]) => `<button type="button" data-vue="${v}"${v === e.vue ? ' aria-current="page"' : ''}>${C.esc(l)}${htmlPastille(pastille(v))}</button>`).join('')}</nav>` : '') +
+      (ong.length ? `<nav class="onglets" aria-label="Rubriques">${ong.map(([v, l]) => `<button type="button" data-vue="${v}"${v === ongletDe(e.vue) ? ' aria-current="page"' : ''}>${C.esc(l)}${htmlPastille(pastille(v))}</button>`).join('')}</nav>` : '') +
       `</div><main class="contenu" id="contenu">${vue.rendre()}</main>`;
     C.signalerNouvellesFenetres(C.racine());
     if (ouverts.length) C.racine().querySelectorAll('#contenu details').forEach((d, i) => { if (ouverts[i]) d.open = true; });
@@ -127,6 +130,16 @@
       } finally { enCours = false; }
     }, delai);
   }
+  // Tri d'un tableau (core.enteteTri) : la même colonne inverse le sens. Redessin sur place, sans entrée
+  // d'historique ; le focus reste sur l'en-tête choisi
+  actions.trier = el => {
+    const k = el.dataset.tri, a = C.etat.arg || {};
+    const sens = k === a.tri ? (a.sens === 'desc' ? 'asc' : 'desc') : (el.dataset.sens || 'asc');
+    C.etat.arg = { ...a, tri: k, sens };
+    rendre();
+    const b = C.racine().querySelector(`[data-action="trier"][data-tri="${k}"]`);
+    if (b) b.focus();
+  };
   function deleguer(racine) {
     racine.addEventListener('click', ev => {
       const v = ev.target.closest('[data-vue]');

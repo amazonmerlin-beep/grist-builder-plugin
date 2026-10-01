@@ -80,6 +80,14 @@ aide (`guidesEnFin`, `{{cle}}`, `voir-guide`), gabarit `guides/confidentialite.m
 suivie par les tests). Références : donnees, widget, livraison, reprise, permissions, cadrage ; SKILL.md :
 10 signaux d'alerte, section « Contribuer au plugin ». Vérification : `docs/tests/verification.md`.
 
+## Version 0.4.0 (01/10/2026)
+Retours de la mission DITND (recette des écrans avec le client). Kit : `ongletDe()` et `onglet` des vues,
+`core.trier` / `core.enteteTri` et action `trier`, styles du tri, suivi d'exemple triable avec titre masqué,
+`corriger-formulaire.js` qui retire les questions retirées du schéma, `module/test/tri.test.js`. Références :
+widget (écrans : onglets, titres, états, listes ; collisions CSS), donnees (« Ne demander que ce qui sert »),
+cadrage, permissions (partage nominatif) ; SKILL.md : 4 signaux d'alerte. Vérification :
+`docs/tests/verification.md`.
+
 ## e) Prochaines actions
 1. Faire installer le plugin par un collègue (README) et recueillir ses retours.
 2. Ajouter au kit, si les projets le demandent : outil des comptes en masse, captures en série, jeu de démonstration (voir LAPI).

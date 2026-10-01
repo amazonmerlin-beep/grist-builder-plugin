@@ -151,6 +151,10 @@ input[readonly], textarea[readonly], select[disabled], input[disabled] { backgro
 .tableau { border-collapse: collapse; width: 100%; font-size: 14px; }
 .tableau th { text-align: left; font-size: 13px; color: var(--c-texte-2); font-weight: 600; padding: 7px 10px; border-bottom: 1px solid var(--c-texte-2); white-space: nowrap; position: sticky; top: 0; background: var(--c-fond); }
 .tableau th button { background: none; border: 0; padding: 0; font: inherit; color: inherit; cursor: pointer; }
+.tableau th button.tri { display: inline-flex; gap: 4px; align-items: center; }
+.tableau th button.tri:hover { color: var(--c-action); text-decoration: underline; }
+.tri-fleche { font-size: 10px; color: var(--c-texte-2); }
+.tri.actif .tri-fleche { color: var(--c-action); }
 .tableau td { padding: 6px 10px; border-bottom: 1px solid var(--c-fond-alt); vertical-align: top; }
 .tableau tbody tr.cliquable { cursor: pointer; }
 .tableau tbody tr.cliquable:hover { background: var(--c-fond-alt); }

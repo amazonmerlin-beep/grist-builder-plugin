@@ -50,6 +50,21 @@ propose lui-même, une fois et avec votre accord, d'en ouvrir une après un déf
 réutilisable (section « Contribuer au plugin » de `SKILL.md`). Contenu généralisé : jamais de données, noms,
 adresses ou identifiants d'un client. Licence MIT.
 
+## Nouveautés 0.4.0 (retours de la mission DITND, 01/10/2026 : recette des écrans avec le client)
+
+- **Onglet du parent surligné** pour une fiche ouverte depuis une liste (`onglet` de la vue, `ongletDe()`) ;
+  titre d'un écran d'onglet masqué (`sr-only`) ; pas de fil d'Ariane à un niveau.
+- **Tableaux triables** : `core.trier` et `core.enteteTri`, action `trier` (`aria-sort`, focus gardé, cases vides
+  en fin de liste) ; exemple dans le suivi de `vue-exemple.js` ; tests unitaires (`tri.test.js`).
+- **Motifs d'écran** (`references/widget.md`) : compteurs groupés selon qui doit agir, frise d'états séparée de
+  l'action « Passer à … », sélection en masse dans les longues listes de cases, collisions de classes CSS.
+- **Formulaire** : « Ne demander que ce qui sert » (usage et source de chaque question, questions fermées au
+  client, `references/donnees.md`) ; `corriger-formulaire.js` retire du formulaire publié les questions
+  retirées du schéma, sans reconstruire.
+- **Partage** : avec le lien public, le partage nominatif n'est pas nécessaire pour travailler ; sinon
+  « Éditeur » ; le widget ne peut pas partager (`references/permissions.md`).
+- **SKILL.md** : 4 nouveaux signaux d'alerte, dont la cible explicite d'un déploiement local en mode auto.
+
 ## Nouveautés 0.3.0 (retours de la mission DITND, 30/09/2026 au soir)
 
 - **Bouton « retour » du navigateur** : il revient à l'écran précédent du module (historique poussé sur le cadre

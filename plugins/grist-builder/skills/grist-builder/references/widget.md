@@ -87,6 +87,36 @@ recharge ce cadre au lieu d'y revenir. `aller(vue, arg, { historique: false })` 
 (retour lui-même, changement d'identité). Test : `history.back()` sur la page (le `goBack()` de Playwright
 attend un chargement qui n'arrive pas).
 
+## Écrans : onglets, titres, états, listes
+
+Retours d'une recette avec le client : l'interface doit dire où l'on est sans le répéter.
+- **Sous-vue sous l'onglet de sa liste** : une vue déclare `onglet: '<vue de la liste>'` (`ongletDe()` dans
+  `app.js`) ; une fiche ouverte depuis la liste garde l'onglet surligné (`aria-current`) et le titre de la page.
+  Sans cela, aucun onglet n'est surligné et l'utilisateur se croit perdu.
+- **Pas de titre qui répète l'onglet** : sur un écran d'onglet, le `h2` est `class="sr-only"`. Il reste pour le
+  focus au changement d'écran et la structure des titres (RGAA 9.1). Les titres visibles portent une
+  information (nom de la fiche, de la séance).
+- **Pas de fil d'Ariane à un niveau** : l'onglet surligné et le bouton retour suffisent. Plus bas, un seul lien
+  « ← <parent> ».
+- **Compteurs d'un tableau de bord** : grouper les statuts selon **qui doit agir** (« À traiter », « En
+  cours », « Terminés »), une aide par statut (« à contrôler », « à publier »), le groupe « À traiter » mis en
+  avant, les zéros estompés, « / total » sur les cases non nulles. Une rangée uniforme de chiffres ne se lit pas.
+- **États et actions séparés** : un cycle (préparation, ouverte, clôturée…) s'affiche en **frise numérotée
+  non cliquable** (`ol`, `aria-current="step"`, « (étape actuelle) » masqué), et à côté **une seule action
+  principale**, « Passer à « … » », avec un lien d'aspect discret pour revenir en arrière. Dire ce que voient les
+  personnes à l'étape actuelle et ce que changera la suivante (le même texte sert à la confirmation). Des
+  pastilles d'état à côté de boutons de même forme se confondent.
+- **Longues listes de cases** (membres, destinataires) : « Tout sélectionner », « Tout désélectionner » (avec
+  confirmation), « Reprendre ceux de <la fiche précédente> » ; cases groupées par catégorie (structure), avec un
+  compte « 2 / 4 » et une bascule par groupe ; **une seule écriture** par action. Une nouvelle fiche reprend
+  d'office la sélection de la précédente. Afficher l'adresse à côté du nom : des comptes d'essai portent
+  souvent le même nom.
+- **Tableaux triables** : `core.trier(lignes, cols, etat.arg, defaut)` et `core.enteteTri(cols, etat.arg,
+  defaut)`, action `trier` dans `app.js` (exemple : `vue-exemple.js`). Colonnes `[clé, libellé, valeur,
+  sens par défaut]` ; bouton dans chaque en-tête, `aria-sort` sur la colonne triée, légende masquée (« les
+  boutons d'en-tête trient la liste »). Le redessin se fait sur place (pas d'entrée d'historique) et rend le
+  focus au bouton cliqué ; cases vides en fin de liste dans les deux sens ; un export suit l'ordre de l'écran.
+
 ## Pièces jointes
 
 **Méthode** (`core.lirePiece`) :
@@ -124,7 +154,9 @@ un PDF dans un cadre à cette adresse : passer par un blob.
 - Bibliothèques externes : version figée **et empreinte SRI** (`integrity`) ; sinon le code chargé agit avec
   les droits de chaque utilisateur. Éviter les versions npm abandonnées (SheetJS : prendre `cdn.sheetjs.com`).
 - **CSS préfixé ou vérifié.** Une classe réutilisée casse la mise en page. La racine du module porte la classe
-  `.formulaire` : aucune autre règle ne doit viser `.formulaire` ou `.formulaire label`.
+  `.formulaire` : aucune autre règle ne doit viser `.formulaire` ou `.formulaire label`. Même piège entre deux
+  écrans du projet : une classe générique (`.etapes`) définie pour l'accueil en grille a déformé la frise
+  d'une autre page. Chercher la classe dans tous les CSS avant de la réutiliser.
 - Tester dans un vrai navigateur (Playwright, Chrome installé : `tests-e2e/`), rôle par rôle. Les outils
   attendent que le module soit **prêt** (`Formulaire.core.etat.vue`) : le HTML du widget s'affiche avant
   que son code ait fini de démarrer.

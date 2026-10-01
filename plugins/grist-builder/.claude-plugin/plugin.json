@@ -1,7 +1,7 @@
 {
   "name": "grist-builder",
   "displayName": "Grist builder",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "description": "Mener un projet de formulaire, d'enquête ou d'outil métier Grist, du besoin à la livraison : méthode, estimation, reprise d'un document existant, règles de construction et socle technique.",
   "author": {
     "name": "Merlin Aupic"

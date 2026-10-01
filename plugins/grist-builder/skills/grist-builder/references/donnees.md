@@ -78,6 +78,17 @@ formulaire une mention courte (finalité, contact pour les droits) et l'adresse 
 sans compte (site du client) : le guide « confidentialite » du document n'est pas accessible aux déposants
 anonymes (`livraison.md`).
 
+**Ne demander que ce qui sert.** Chaque question a un **usage** (évaluation au regard du référentiel du
+client, instruction : identification, conflit d'intérêts, contact ; publication) et une **source** traçable
+(formulaire déjà validé par le client, référentiel, demande écrite). Les champs « réflexes du métier »
+(numéro de déclaration d'activité, tarif, téléphone, fonction, sessions, site web) sans usage dans l'outil
+n'ont rien à y faire : ils allongent le dépôt et collectent des données pour rien. Méthode : partir du
+formulaire que le client a validé, puis lui poser des **questions fermées**, bloc par bloc (garder / retirer /
+réduire à un champ, avec la raison de chaque option), et noter la décision et sa date en tête de
+`schema/formulaire.js`. Retirer une question : `node outils/corriger-formulaire.js` l'enlève du formulaire
+publié d'un document déjà construit ou livré ; la colonne et ses données restent. Adapter l'affichage du
+module : une déclaration vide ne doit pas s'afficher en liste de « — ».
+
 **Collecter en une fois** : si les informations servent plus tard (publication sur un site, fiche), les
 demander dès le formulaire de dépôt, dans une partie dédiée, plutôt que dans un second formulaire. Un second
 formulaire qui doit retrouver le dossier obligerait à exposer la liste des dossiers.

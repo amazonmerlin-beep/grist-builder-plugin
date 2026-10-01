@@ -193,8 +193,36 @@
   const confirmer = (titre, texte, libelle = 'Confirmer') =>
     fenetre(titre, `<p>${texte}</p>`, { boutons: [{ libelle: 'Annuler', valeur: false, classe: 'secondaire' }, { libelle, valeur: true }] });
 
+  // ------------------------------------------------------------------ tableaux triables
+  // cols : [[clé, libellé, valeur(ligne) → nombre ou texte, sens par défaut ('asc' | 'desc')], …]
+  // t : { tri, sens } (état de l'écran, etat.arg) ; sans tri choisi, `defaut` (clé) ou l'ordre reçu.
+  // Valeurs vides toujours en fin de liste ; à égalité, ordre reçu conservé.
+  const vide = v => v === null || v === undefined || v === '';
+  function trier(lignes, cols, t = {}, defaut = null) {
+    const k = t.tri || defaut;
+    const c = cols.find(x => x[0] === k);
+    if (!c) return lignes.slice();
+    const sens = (t.tri ? t.sens : c[3]) === 'desc' ? -1 : 1;
+    const cmp = (x, y) => (typeof x === 'number' && typeof y === 'number' ? x - y : String(x).localeCompare(String(y), 'fr', { numeric: true }));
+    return lignes.map((l, i) => [l, c[2](l), i])
+      .sort(([, x, i], [, y, j]) => (vide(x) - vide(y)) || (vide(x) ? 0 : sens * cmp(x, y)) || i - j)
+      .map(([l]) => l);
+  }
+  // En-têtes : bouton par colonne, aria-sort sur la colonne triée (RGAA 5.7) ; action « trier » dans app.js.
+  // Ajouter au tableau une légende : <caption class="sr-only">… ; les boutons d'en-tête trient la liste</caption>
+  function enteteTri(cols, t = {}, defaut = null) {
+    const k = t.tri || defaut;
+    const c0 = cols.find(x => x[0] === k);
+    const sens = t.tri ? t.sens : (c0 && c0[3]) || 'asc';
+    return cols.map(([cle, lib, , sensDefaut]) => {
+      const actif = cle === k;
+      return `<th scope="col"${actif ? ` aria-sort="${sens === 'desc' ? 'descending' : 'ascending'}"` : ''}><button type="button" class="tri${actif ? ' actif' : ''}" data-action="trier" data-tri="${esc(cle)}"${sensDefaut ? ` data-sens="${sensDefaut}"` : ''}>${esc(lib)}<span class="tri-fleche" aria-hidden="true">${actif ? (sens === 'desc' ? '▼' : '▲') : '↕'}</span></button></th>`;
+    }).join('');
+  }
+
   L.core = {
     TABLES, etat, charger, lireTable, param, identifier, moiDepuis, estAdmin, appliquer, maj, ajouter, messageErreur,
     televerser, infosPiecesJointes, lirePiece, esc, racine, toast, fenetre, confirmer, signalerNouvellesFenetres,
+    trier, enteteTri,
   };
 })(globalThis.Formulaire = globalThis.Formulaire || {});

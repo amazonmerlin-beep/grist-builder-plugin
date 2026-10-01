@@ -84,6 +84,10 @@ Vérifier et, s'il en manque, le dire au consultant.
 | « Le retour du navigateur n'a pas à marcher dans un widget » | Historique poussé sur le cadre du chargeur, fenêtre fermée d'abord (`widget.md`) |
 | « Il suffit de recharger pour voir le nouveau » | Veille ciblée par rôle, pastilles d'onglets, compte accepté sans recharger (`widget.md`) |
 | « axe-core ne signale rien : c'est accessible » | Aussi : zoom à 200 % (`test:zoom`), liens « nouvelle fenêtre », `th scope`, clavier, lecteur d'écran |
+| « J'ajoute les champs habituels du métier (n° de déclaration, tarif, téléphone) » | Chaque question : un usage dans l'outil et une source ; partir du formulaire validé, questions fermées au client (`donnees.md`) |
+| « Le titre et le fil d'Ariane rappellent où l'on est » | Onglet du parent surligné (`onglet` de la vue), titre d'onglet `sr-only`, pas de fil à un niveau (`widget.md`) |
+| « Les étapes en pastilles, avec les boutons à côté » | Frise d'états non cliquable + une seule action « Passer à … » (`widget.md`) |
+| « Le déploiement local est refusé par le mode auto » | Cible explicite : `GRIST_URL=http://localhost:<port> DOC_COURANT=grist-local/doc-courant.json` |
 | « La confidentialité, c'est le client qui s'en occupe » | Notice livrée (gabarit du kit, « à fixer »), mention dans le formulaire public (`livraison.md`) |
 
 ## Contribuer au plugin

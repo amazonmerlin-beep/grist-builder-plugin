@@ -54,6 +54,11 @@ d'annuaire) ou **invitations** (chacun invité nommément, comme Éditeur ; lour
   (séance « En séance ») : règle sur une colonne calculée `Seance_statut`.
 - **Document partagé par lien** (`everyone@getgrist.com` éditeur) : il n'apparaît **pas** dans la liste de
   documents des personnes. Partage nominatif aligné sur l'annuaire (`npm run partager`), ou envoi du lien.
+  Avec le lien public, le partage nominatif **n'est pas nécessaire pour travailler** : il ne sert qu'à la liste
+  de documents et au courriel d'invitation de l'instance. S'il devient la seule porte (instance qui refuse le
+  lien public), il doit être « Éditeur » : un « Lecteur » ne peut rien écrire, et les règles ne donnent jamais
+  plus que le partage. Le widget ne peut pas modifier le partage (ajouter à l'annuaire n'invite pas dans
+  Grist) : c'est le propriétaire, par « Partager » ou `npm run partager`.
 - **Espace d'équipe** (getgrist.com) : le document **hérite des droits de l'espace**, et tous les membres de
   l'équipe l'ouvrent ; sans ligne d'annuaire, ils ne voient que l'écran d'accès. À l'inverse, un **invité** qui
   ouvre l'accueil de l'équipe voit « Accès refusé » : lui donner le lien direct du document (`livraison.md`).

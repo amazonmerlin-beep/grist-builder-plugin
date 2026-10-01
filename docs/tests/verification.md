@@ -35,6 +35,31 @@ la 0.2.0 (après).
 - 0 violation d'accessibilité ;
 - `.grist` livré avec le chargeur public.
 
+## Version 0.4.0 (01/10/2026) : retours de la mission DITND, recette des écrans
+
+Copie fraîche du kit, Grist local séparé (port 8486, compose `grist-kit-verif`, supprimé ensuite), Chrome par
+défaut.
+
+| Contrôle | Résultat |
+|---|---|
+| Construction | 4,4 s |
+| Tests unitaires | 11 / 11 (dont 3 nouveaux : `tri.test.js`) |
+| Tests de droits | 7 / 7, 1 sauté (pas de formulaire) |
+| Parcours Chrome | 6 / 6 |
+| axe-core | 0 violation |
+| Zoom 200 % (7 écrans) | 0 débordement |
+
+Contrôles à la main (Playwright, compte pilote) :
+- **Tri** : à l'ouverture, « Entité » croissant (`aria-sort="ascending"`) ; clic sur « Statut » : Brouillon,
+  Brouillon, Transmis, `aria-sort` déplacé, focus sur le bouton « Statut » ; second clic : ordre inversé,
+  `descending` ;
+- **titre d'onglet** masqué (`position: absolute`, classe `sr-only`), toujours présent pour le focus ;
+- **sous-vue** déclarée avec `onglet: 'suivi'` : onglet « Suivi » surligné, titre de la page « Suivi — … ».
+
+`corriger-formulaire.js` (retrait des questions) : exercé sur le projet d'origine, sur un Grist local puis sur
+un document d'essai d'une instance réelle (66 → 54 → 39 questions, colonnes et données gardées, formulaire
+publié relu dans Chrome).
+
 ## Version 0.3.0 (01/10/2026) : retours de la mission DITND, 30/09 au soir
 
 Portage des améliorations génériques du projet DITND (rien de propre au client). Vérifié sur deux copies

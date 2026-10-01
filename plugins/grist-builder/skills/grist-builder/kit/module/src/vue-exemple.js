@@ -36,12 +36,19 @@
     C.toast('Réponse transmise.');
   };
 
+  // Colonnes triables du suivi : [clé, libellé, valeur de tri, sens par défaut]
+  const COLS_SUIVI = () => [
+    ['entite', 'Entité', r => nomEntite(r.Entite)],
+    ['statut', 'Statut', r => r.Statut],
+    ...QUESTIONS.map(q => [q.col, q.libelle, r => r[q.col], q.type === 'entier' ? 'desc' : 'asc']),
+  ];
   A.vues.suivi = {
     rendre() {
-      const reps = (e.doc.Reponses || []).slice().sort((a, b) => String(a.Entite).localeCompare(String(b.Entite)));
-      // En-têtes th scope="col" (RGAA 5.7) ; tableau large dans .defil : il défile seul au zoom à 200 %
-      return `<div class="large"><h2>Suivi des réponses</h2>
-        <div class="defil"><table class="tableau"><thead><tr><th scope="col">Entité</th><th scope="col">Statut</th>${QUESTIONS.map(q => `<th scope="col">${esc(q.libelle)}</th>`).join('')}</tr></thead>
+      const reps = C.trier(e.doc.Reponses || [], COLS_SUIVI(), e.arg, 'entite');
+      // Titre masqué : l'onglet surligné le dit déjà ; gardé pour le focus et la structure des titres (RGAA 9.1).
+      // En-têtes triables (core.enteteTri) ; tableau large dans .defil : il défile seul au zoom à 200 %
+      return `<div class="large"><h2 class="sr-only">Suivi des réponses</h2>
+        <div class="defil"><table class="tableau"><caption class="sr-only">Réponses ; les boutons d'en-tête trient la liste</caption><thead><tr>${C.enteteTri(COLS_SUIVI(), e.arg, 'entite')}</tr></thead>
         <tbody>${reps.map(r => `<tr><td>${esc(nomEntite(r.Entite))}</td><td>${esc(r.Statut)}</td>${QUESTIONS.map(q => `<td>${esc(r[q.col])}</td>`).join('')}</tr>`).join('')}</tbody></table></div></div>`;
     },
   };
