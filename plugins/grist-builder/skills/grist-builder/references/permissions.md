@@ -20,6 +20,13 @@ d'annuaire) ou **invitations** (chacun invité nommément, comme Éditeur ; lour
 - Règles de colonnes pour protéger les colonnes système (entité, auteur, dates).
 - Condition sur une colonne à choix multiples : `user.Moi.Role_effectif in rec.Public` fonctionne.
 - Contrôle après application : `aclFormulaParsed` non vide pour chaque règle (sinon formule non compilée).
+- **Cumul de rôles sans deuxième rôle** (un administrateur qui évalue aussi) : garder un seul rôle par
+  compte. L'administrateur a déjà tous les droits ; il suffit qu'il puisse être **membre** de l'objet évalué
+  (séance, campagne) : liste des membres possibles = évaluateurs + administrateurs, ces derniers **jamais cochés
+  d'office**. Côté module : l'onglet d'évaluation n'apparaît à l'administrateur que lorsqu'il est membre
+  (`visible()` sur la vue), et la synthèse lui **masque les avis des autres** tant qu'il n'a pas transmis le sien
+  (garde-fou d'écran, avec « Afficher quand même » : les règles le laissent tout lire). Un second rôle ou une
+  colonne « évalue aussi » compliquerait toutes les règles pour rien.
 
 ## Pièges vérifiés
 

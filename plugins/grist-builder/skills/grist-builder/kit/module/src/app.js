@@ -9,7 +9,9 @@
   const pastille = v => { const p = pastilles[v]; return p && C.etat.moi.connu ? Number(p.compter()) || 0 : 0; };
   const htmlPastille = n => (n ? ` <span class="pastille-onglet" aria-hidden="true">${n > 99 ? '99+' : n}</span><span class="sr-only"> (${n})</span>` : '');
   const libelleRole = r => (CONFIG.roles[r] || {}).libelle || 'Compte non reconnu';
-  const ongletsDuRole = () => (C.etat.moi && CONFIG.onglets[C.etat.moi.role]) || [];
+  // Onglets du rôle ; une vue peut se masquer selon la situation (visible() : par exemple l'onglet d'évaluation
+  // d'un administrateur, affiché seulement quand il est membre de la séance ouverte)
+  const ongletsDuRole = () => ((C.etat.moi && CONFIG.onglets[C.etat.moi.role]) || []).filter(([v]) => !vues[v] || !vues[v].visible || vues[v].visible());
   const vueParDefaut = () => (ongletsDuRole()[0] || ['inconnu'])[0];
   // Onglet surligné : celui de la vue, ou celui dont elle dépend (vue.onglet) : une fiche ouverte depuis une
   // liste garde l'onglet de la liste, sans fil d'Ariane

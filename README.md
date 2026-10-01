@@ -63,6 +63,9 @@ adresses ou identifiants d'un client. Licence MIT.
   retirées du schéma, sans reconstruire.
 - **Partage** : avec le lien public, le partage nominatif n'est pas nécessaire pour travailler ; sinon
   « Éditeur » ; le widget ne peut pas partager (`references/permissions.md`).
+- **Administrateur qui évalue aussi**, sans second rôle : membre possible d'une séance (jamais coché d'office),
+  onglet d'évaluation affiché seulement s'il est membre (`visible()` d'une vue, dans `app.js`), avis des autres
+  masqués dans la synthèse jusqu'à sa transmission (`references/permissions.md`).
 - **SKILL.md** : 4 nouveaux signaux d'alerte, dont la cible explicite d'un déploiement local en mode auto.
 
 ## Nouveautés 0.3.0 (retours de la mission DITND, 30/09/2026 au soir)
