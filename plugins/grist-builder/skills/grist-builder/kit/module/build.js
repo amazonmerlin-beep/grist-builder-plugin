@@ -31,8 +31,11 @@ for (const f of ORDRE) {
 }
 const js = `globalThis.Formulaire = { CONFIG: ${JSON.stringify(CONFIG)} };\n${morceaux.join('\n')}\nFormulaire.VERSION = ${JSON.stringify(version)};\nFormulaire.app.demarrer();\n`;
 if (/<\/script/i.test(js)) throw new Error('Le code contient « </script » : le builder le couperait.');
-// ui.css d'abord, puis les feuilles du projet (theme.css…) par ordre alphabétique : elles l'emportent
-const css = ['ui.css', ...fs.readdirSync(SRC).filter(f => f.endsWith('.css') && f !== 'ui.css').sort()].map(f => fs.readFileSync(path.join(SRC, f), 'utf8')).join('\n');
+// ui.css d'abord, puis les feuilles du projet (theme.css…) par ordre alphabétique : elles l'emportent ;
+// enfin les retouches (retouche-<zone>.css : correctifs d'une revue, déposés zone par zone sans conflit)
+const feuilles = fs.readdirSync(SRC).filter(f => f.endsWith('.css') && f !== 'ui.css').sort();
+const retouche = f => f.startsWith('retouche-');
+const css = ['ui.css', ...feuilles.filter(f => !retouche(f)), ...feuilles.filter(retouche)].map(f => fs.readFileSync(path.join(SRC, f), 'utf8')).join('\n');
 const html = `<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><style>\n${css}\n</style>\n<div id="app" class="formulaire"></div>\n`;
 
 fs.mkdirSync(DIST, { recursive: true });

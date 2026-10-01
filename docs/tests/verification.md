@@ -35,6 +35,26 @@ la 0.2.0 (après).
 - 0 violation d'accessibilité ;
 - `.grist` livré avec le chargeur public.
 
+## Version 0.5.0 (01/10/2026) : revue design d'un projet client
+
+Portage générique des constats vérifiés d'une revue design (rien de propre au client : noms, adresses,
+identifiants et termes métier relus et retirés). Vérification **sans Grist, sans Docker et sans Chrome** (poste à
+court de mémoire) : les contrôles dans le navigateur restent à rejouer (SUIVI.md, prochaines actions).
+
+| Contrôle | Résultat |
+|---|---|
+| `node --check` (app.js, core.js, vue-aide.js, vue-exemple.js, build.js, formulaire.exemple.js, captures-guides.js, aligner-libelles-parametres.js, app.test.js) | sans erreur |
+| Tests unitaires (`npm test`) | 14 / 14 (dont 3 nouveaux : `app.test.js`) |
+| Assemblage du module (`node module/build.js`) | 5 fichiers, 50 Ko de JS, 24 Ko de CSS |
+| Ordre des feuilles | `ui.css`, puis les feuilles du projet, puis `retouche-*.css` (feuilles temporaires) |
+| `claude plugin validate` (marketplace et plugin) | validation réussie |
+| Tests de droits, parcours Chrome, axe-core, zoom 200 %, `npm run captures` | **non lancés** |
+
+`app.test.js` couvre, sans navigateur : la nature du focus (texte, choix, rien), la règle de redessin (jamais
+pendant une saisie ni une fenêtre ; après un choix, seulement pour sa propre écriture), le retour par l'onglet
+parent (`argRetour` depuis une sous-vue seulement). Non couverts sans navigateur : le focus rendu après redessin,
+la hauteur d'en-tête au zoom, le masquage des noms dans les captures. Les sélecteurs des parcours sont gardés
+(`#f-Q1_Nom`, `[data-action="transmettre"]`, une ligne par entité dans le suivi sans filtre).
 ## Version 0.4.0 (01/10/2026) : retours de la mission DITND, recette des écrans
 
 Copie fraîche du kit, Grist local séparé (port 8486, compose `grist-kit-verif`, supprimé ensuite), Chrome par

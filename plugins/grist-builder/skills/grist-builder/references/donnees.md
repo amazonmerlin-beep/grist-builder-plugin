@@ -48,7 +48,13 @@ un élément vaut `{ texte }` (Markdown) ou `{ col, requis?, question?, lignes? 
    - `formTextFormat: 'multiline'` et `formTextLineCount` ;
    - `formSelectFormat: 'radio'`.
 
-   La description d'une colonne sert d'aide sous la question.
+   **La description d'une colonne ne s'affiche pas dans le formulaire publié** (vérifié sur captures) : une aide
+   écrite là reste invisible au déposant. Ce qu'il doit lire passe par l'option `question` (le libellé : une
+   case de consentement porte la phrase entière à laquelle on consent, pas « Autorisation * ○ Oui ») ou par un
+   paragraphe `{ texte }` juste après le champ (à quoi sert la question, quelle pièce joindre). Une note vaut
+   mieux qu'un libellé trop long sur une liste déroulante. Un renvoi (« voir les conditions ») porte un lien
+   lisible sans compte, sinon il reste en attente dans les arbitrages. Pas de jargon redondant avec le titre de
+   la partie (« (site) » sous « Publication sur le site »).
 2. **Mise en page** (`layoutSpec`, en JSON) :
    `{type:'Layout', children:[{type:'Paragraph', text:'# Titre'}, {type:'Section', children:[{type:'Field', leaf:<id du champ>}, …]}, {type:'Submit'}]}`.
    Les paragraphes sont en Markdown.

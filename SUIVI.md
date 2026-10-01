@@ -88,10 +88,23 @@ widget (écrans : onglets, titres, états, listes ; collisions CSS), donnees («
 cadrage, permissions (partage nominatif) ; SKILL.md : 4 signaux d'alerte. Vérification :
 `docs/tests/verification.md`.
 
+## Version 0.5.0 (01/10/2026)
+Revue design d'un projet client (constats vérifiés, portage générique). Kit : redessin après un choix
+(`natureFocus`, `redessinPermis`), focus rendu après redessin, `<details>` retrouvés par id, `memoriser()`
+(aussi dans `trier`), `argRetour()` et `argClicOnglet`, hauteur d'en-tête à 0 quand il ne colle pas,
+`core.signalerEnregistre`, CSS (bordure des champs, en-tête et onglets au zoom, en-têtes de tableau collants,
+focus des onglets, `.champ-enregistre`, `aria-invalid`, champ fichier, accordéon, ligne ajoutée,
+`.btn.lien.danger`), `retouche-*.css` chargés en dernier, sommaire d'aide repliable, exemple (filtre,
+« n sur N », liste vide, erreur sous le champ, `data-etat`), `captures-guides.js`,
+`aligner-libelles-parametres.js`, `module/test/app.test.js`. Références : widget (motifs d'une revue design),
+livraison (méthode de revue, captures), donnees (descriptions invisibles dans le formulaire public), permissions
+(impartialité) ; SKILL.md : 5 signaux d'alerte. Vérification : `docs/tests/verification.md` (sans Chrome).
+
 ## e) Prochaines actions
 1. Faire installer le plugin par un collègue (README) et recueillir ses retours.
-2. Ajouter au kit, si les projets le demandent : outil des comptes en masse, captures en série, jeu de démonstration (voir LAPI).
-3. Essayer la section « Contribuer au plugin » sur un vrai projet (première issue proposée par le skill).
+2. Ajouter au kit, si les projets le demandent : outil des comptes en masse, jeu de démonstration (voir LAPI).
+3. Rejouer sur une copie fraîche du kit les contrôles Chrome de la 0.5.0 (parcours, axe-core, zoom, `npm run captures`), non lancés faute de mémoire.
+4. Essayer la section « Contribuer au plugin » sur un vrai projet (première issue proposée par le skill).
 
 ## Notes
 - Essais du kit dans `essai/` (ignoré par git), Grist local sur le port 8485 pour ne pas gêner LAPI.

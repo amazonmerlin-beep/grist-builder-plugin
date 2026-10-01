@@ -48,7 +48,7 @@ montre le motif).
 4. `npm run construire`, puis `npm run deployer` ; ouvrir `http://localhost:8484/o/docs/doc/<urlId>`
    (connexion de test : `/test/login?username=<adresse>`).
 5. `npm test`, `npm run test:acces`, `npm run test:parcours`, `npm run test:rgaa`, `npm run test:zoom` ;
-   `npm run guides` ; `npm run partager` ; `npm run livrer`.
+   `npm run captures` puis `npm run guides` ; `npm run partager` ; `npm run livrer`.
 6. Essai sur une instance réelle : nom et `--adresse` distincts de la production, `outils/jeu-essai.js`,
    appels comptés (`livraison.md`).
 
@@ -66,7 +66,7 @@ Vérifier et, s'il en manque, le dire au consultant.
 | « Les lecteurs peuvent être « Lecteur » dans Grist » | Tout le monde « Éditeur » ; les règles limitent |
 | « Je teste avec mon compte » | Un test par rôle (Grist local, connexion de test) ; le propriétaire passe outre les règles |
 | « Je corrige le document à la main » | Le document se reconstruit par script ; corriger le schéma |
-| « Cette date par défaut convient » | Toute valeur par défaut non validée est affichée « à fixer » |
+| « Cette date par défaut convient » | Toute valeur par défaut non validée est affichée « à fixer » pendant la recette, jamais dans un libellé validé |
 | « Erreur CORS sur les pièces jointes : on ouvre la table » | Presque toujours un 403 légitime, des cookies envoyés, ou la protection « réseau local » en local : diagnostiquer (`widget.md`), ne jamais ouvrir |
 | « Les tests passent » (lancés avec des options de Chrome) | Chrome par défaut, sinon le blocage « réseau local » est masqué |
 | « J'enregistre les CGU dans l'annuaire » | Toute écriture dans l'annuaire recharge le document de tous : table dédiée |
@@ -89,6 +89,11 @@ Vérifier et, s'il en manque, le dire au consultant.
 | « Les étapes en pastilles, avec les boutons à côté » | Frise d'états non cliquable + une seule action « Passer à … » (`widget.md`) |
 | « Le déploiement local est refusé par le mode auto » | Cible explicite : `GRIST_URL=http://localhost:<port> DOC_COURANT=grist-local/doc-courant.json` |
 | « La confidentialité, c'est le client qui s'en occupe » | Notice livrée (gabarit du kit, « à fixer »), mention dans le formulaire public (`livraison.md`) |
+| « Une case cochée : l'écran se mettra à jour » | Le focus reste sur la case : sans redessin après sa propre écriture, badge et boutons restent périmés ; focus rendu ensuite (`widget.md`) |
+| « Le filtre appelle `aller()` » | Filtre sur place + `memoriser()`, focus rendu au filtre, « n sur N », liste vide avec « Effacer les filtres » ; retour par l'onglet avec `argRetour` |
+| « Je teste le texte du badge » | Libellés d'affichage séparés des valeurs stockées : tester `data-etat` ; aucun texte de développeur à l'écran (`widget.md`) |
+| « L'aide du formulaire public est dans la description de la colonne » | Elle ne s'affiche pas : option `question` ou paragraphe après le champ (`donnees.md`) |
+| « La revue design se fait en lisant le code » | Captures de tous les écrans et états sur un document de test d'abord (`npm run captures`), une zone par agent, vérificateur adverse contre les décisions du client (`livraison.md`) |
 
 ## Contribuer au plugin
 

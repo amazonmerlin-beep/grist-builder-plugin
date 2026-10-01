@@ -57,6 +57,14 @@ d'annuaire) ou **invitations** (chacun invité nommément, comme Éditeur ; lour
   calculée (`Seance_statut = $Examen.Seance.Statut`) et la tester.
 - **Cellule masquée** : une règle de colonne **sans condition** fait disparaître la colonne ; une règle qui
   **dépend de la ligne** la renvoie censurée, `['C']`, par l'API REST comme par `fetchTable`.
+- **Garde-fous d'impartialité : affichage seulement, ou règle d'accès ?** Masquer dans le module (ne pas afficher
+  à un pair qui s'est retiré pour conflit d'intérêts, ni les avis des autres avant la mise en commun) n'est qu'un confort :
+  la donnée reste lisible par l'API et les données brutes. Pour chaque garde-fou, décider et noter : **affichage
+  seulement** quand l'information n'est pas sensible (et le dire dans la liste des arbitrages), **règle de colonne
+  ou de ligne** dès qu'un pair ne doit pas pouvoir la lire. Signe d'un oubli : l'écran d'un rôle affiche
+  « Compte n° 12 » (la référence vers une table qu'il ne lit pas) ; masquer la ligne entière pour ce rôle, et
+  fermer la colonne si la donnée révèle quelque chose (qui s'est déclaré en conflit). Tester les deux côtés
+  (`acces.test.js`) : le rôle ne la lit pas par l'API, l'administration la lit.
 - **Indépendance des avis** : chacun lit les siens, et ceux des autres seulement quand un statut le permet
   (séance « En séance ») : règle sur une colonne calculée `Seance_statut`.
 - **Document partagé par lien** (`everyone@getgrist.com` éditeur) : il n'apparaît **pas** dans la liste de

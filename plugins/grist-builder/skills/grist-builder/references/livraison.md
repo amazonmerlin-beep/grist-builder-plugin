@@ -9,7 +9,11 @@
 - Captures en série de tous les écrans (Playwright) : elles servent aux guides et à l'atelier, et révèlent
   les défauts d'affichage (textes coupés, fenêtres qui débordent, libellés incohérents). **Les regarder**,
   écran par écran, avant de montrer quoi que ce soit : colonnes qui ne vont pas jusqu'en bas, styles écrasés,
-  couleurs trop fortes, boutons de tailles différentes.
+  couleurs trop fortes, boutons de tailles différentes. `npm run captures` (`tests-e2e/captures-guides.js`,
+  lecture seule, Grist local) prend un écran par onglet de chaque rôle, plus les écrans déclarés dans `EN_PLUS`,
+  ne capture que le contenu (sous l'en-tête : une image de guide ne se confond pas avec la vraie interface) et
+  remplace à l'écran les noms et adresses réels par des noms fictifs. Après une nouvelle série : `npm run guides`,
+  sinon le document garde les anciennes images (en local comme sur l'instance).
 - **Chrome par défaut** : aucune option qui lève la protection « réseau local » (`widget.md`). Un test qui
   passe avec ces options échoue chez l'utilisateur.
 - **Où tester** : sur le Grist local, sur un **document d'essais** dès que quelqu'un consulte le document de
@@ -24,6 +28,29 @@
   `ℹ tests`, `ℹ pass`, `ℹ fail` : filtrer sur ces lignes, pas sur `^ok`.
 - **Bouton « retour »** : le tester avec `page.evaluate(() => history.back())` ; le `goBack()` de Playwright
   attend un chargement qui n'arrive pas (le module change d'écran sans charger de page).
+
+## Revue design (avant une recette ou une livraison)
+
+Une revue complète des écrans, menée par plusieurs agents, trouve en une session ce que des recettes successives
+laissent passer (écran figé après un choix, focus perdu, boutons pleins en concurrence, textes de développeur,
+champs illisibles au zoom). Méthode :
+1. **Préparer d'abord les captures de tous les écrans sur un document de test** : jeu d'essai fictif couvrant
+   chaque état (vide, en cours, terminé, erreur), `npm run captures -- --dossier tests-e2e/captures/revue
+   --entier`, plus les écrans hors onglets (`EN_PLUS`), les fenêtres et une série à 640 px de large (zoom à
+   200 %). Leçon : sans captures, les agents relisent le code et devinent l'écran ; un état non capturé (première
+   connexion, liste vide, lecture seule) n'est pas revu du tout.
+2. **Une zone par agent** (accueil et listes, fiches, parcours d'un rôle, socle : en-tête, champs, aide) : chacun
+   lit ses captures et le code, et rend des constats `[gravité/effort] écran — constat — correctif proposé`
+   (fichier, ligne, code), RGAA cité quand il s'applique.
+3. **Un vérificateur adverse** relit chaque constat contre le code et contre **les décisions du client**
+   (arbitrages notés, guides validés) : il confirme, corrige (le constat était faux sur un point, le correctif
+   casserait autre chose), ou **écarte** ce qui contredit une décision (« pas de fil d'Ariane », « pas de
+   règle métier inventée ») ou qui n'est que cosmétique. Les écartés sont gardés, avec leur raison.
+4. **Synthèse** : une liste unique, triée par gravité, avec les dépendances entre correctifs (le champ fichier
+   rendu focalisable exige d'abord le redessin après un choix) ; le consultant la valide avant tout correctif.
+5. **Correctifs en parallèle sans conflit** : un fichier de retouche CSS par zone (`retouche-<zone>.css`, chargés
+   en dernier, `widget.md`) ; le JavaScript partagé (`app.js`, `core.js`) par un seul agent. Puis tests,
+   captures reprises et relues, guides rechargés.
 
 ## Essayer sur une instance réelle (getgrist.com, instance du client)
 
@@ -59,7 +86,9 @@ valeur, ou par « [contact_email à fixer] ».
   **Guides** (`npm run guides`), affichés dans l'onglet **Aide** ; chaque rôle ne lit que les guides de son
   public (règle d'accès). Les captures sont des pièces jointes du guide.
 - Guides types : obtenir un accès (inconnu) ; l'essentiel en une page (par public) ; guide du répondant ;
-  guide du pilotage ; administration (comptes, paramètres, droits) ; guide technique.
+  guide du pilotage ; administration (comptes, paramètres, droits) ; guide technique. La façon de modifier les
+  guides (table Guides, Markdown, captures en pièces jointes) va dans le guide technique, pas à l'écran de
+  l'administration ; les guides des utilisateurs nomment les paramètres par leur libellé, jamais par leur clé.
 - Support d'atelier : parcours du répondant (temps de réponse par profil, durée totale, frictions, FAQ),
   puis les arbitrages avec la valeur appliquée et les options, et un relevé de décisions à remplir.
 

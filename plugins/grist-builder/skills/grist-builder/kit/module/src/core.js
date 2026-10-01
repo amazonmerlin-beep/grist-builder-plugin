@@ -193,6 +193,28 @@
   const confirmer = (titre, texte, libelle = 'Confirmer') =>
     fenetre(titre, `<p>${texte}</p>`, { boutons: [{ libelle: 'Annuler', valeur: false, classe: 'secondaire' }, { libelle, valeur: true }] });
 
+  /**
+   * Retour d'un enregistrement réussi sur place (champ écrit au `change` avec { rendre: false }) : marque verte
+   * 2 s sur le champ (.champ-enregistre) et annonce « Modification enregistrée. » dans une zone role=status
+   * placée dans body, hors de la racine redessinée (une zone recréée à chaque rendu n'est pas annoncée).
+   * À chaîner après l'écriture : C.maj(…).then(() => C.signalerEnregistre(el)) ; un échec a déjà son toast.
+   */
+  function signalerEnregistre(el) {
+    if (el && el.classList) {
+      el.classList.add('champ-enregistre');
+      clearTimeout(el._enregistre);
+      el._enregistre = setTimeout(() => el.classList.remove('champ-enregistre'), 2000);
+    }
+    let z = document.getElementById('annonce-enregistrement');
+    if (!z) {
+      z = Object.assign(document.createElement('div'), { id: 'annonce-enregistrement', className: 'sr-only' });
+      z.setAttribute('role', 'status');
+      document.body.appendChild(z);
+    }
+    z.textContent = '';
+    setTimeout(() => { z.textContent = 'Modification enregistrée.'; }, 50);
+  }
+
   // ------------------------------------------------------------------ tableaux triables
   // cols : [[clé, libellé, valeur(ligne) → nombre ou texte, sens par défaut ('asc' | 'desc')], …]
   // t : { tri, sens } (état de l'écran, etat.arg) ; sans tri choisi, `defaut` (clé) ou l'ordre reçu.
@@ -223,6 +245,6 @@
   L.core = {
     TABLES, etat, charger, lireTable, param, identifier, moiDepuis, estAdmin, appliquer, maj, ajouter, messageErreur,
     televerser, infosPiecesJointes, lirePiece, esc, racine, toast, fenetre, confirmer, signalerNouvellesFenetres,
-    trier, enteteTri,
+    signalerEnregistre, trier, enteteTri,
   };
 })(globalThis.Formulaire = globalThis.Formulaire || {});

@@ -22,6 +22,41 @@
     return `<header class="bandeau"><h1><span class="bandeau-sur">${esc(C.param('sous_titre', ''))}</span>${esc(C.param('titre', CONFIG.titre))}</h1>
       <div class="qui"><b>${esc(m.nom || m.email)}</b><br>${esc(libelleRole(m.role))}</div></header>`;
   }
+  // Hauteur de l'en-tête fixe : les colonnes collantes se placent juste dessous ; 0 quand il ne colle pas
+  // (petite largeur ou petite hauteur, zoom à 200 % : voir ui.css)
+  function majHauteurEntete() {
+    const ent = C.racine().querySelector('.entete');
+    if (ent) document.documentElement.style.setProperty('--h-entete', (getComputedStyle(ent).position === 'sticky' ? ent.offsetHeight : 0) + 'px');
+  }
+  // Élément actif avant un redessin du même écran, pour lui rendre le focus ensuite (RGAA 12.8) : repéré par son
+  // id, sinon par ses attributs data-* d'action (et la valeur d'un bouton radio ou d'une case)
+  const CLES_FOCUS = ['vue', 'action', 'change', 'actionFichier', 'id', 'cle', 'champ', 'col', 'tri'];
+  const attr = k => 'data-' + k.replace(/[A-Z]/g, m => '-' + m.toLowerCase());
+  function repererFocus() {
+    const a = document.activeElement, r = C.racine();
+    if (!a || a === document.body || !a.closest || !r.contains(a)) return null;
+    const val = /^(radio|checkbox)$/.test(a.type) ? `[value="${CSS.escape(a.value)}"]` : '';
+    const sels = [];
+    if (a.id) sels.push('#' + CSS.escape(a.id));
+    if (a.tagName === 'SUMMARY' && a.parentElement && a.parentElement.id) sels.push('#' + CSS.escape(a.parentElement.id) + ' > summary');
+    const data = CLES_FOCUS.filter(k => a.dataset && a.dataset[k] !== undefined).map(k => `[${attr(k)}="${CSS.escape(a.dataset[k])}"]`).join('');
+    if (data) sels.push(a.tagName.toLowerCase() + data + val);
+    const rang = sels.map(s => [...r.querySelectorAll(s)].indexOf(a));
+    return { sels, rang, section: [...r.querySelectorAll('#contenu section')].indexOf(a.closest('section')) };
+  }
+  function rendreFocus(f) {
+    const r = C.racine();
+    let el = null;
+    f.sels.forEach((s, i) => { if (!el) { const xs = r.querySelectorAll(s); el = xs[f.rang[i]] || xs[0] || null; } });
+    // Élément disparu (« Passer à … » remplacé par l'étape suivante) : titre de la section de même rang, puis
+    // titre de l'écran ; jamais le document entier
+    const sec = !el && f.section >= 0 ? r.querySelectorAll('#contenu section')[f.section] : null;
+    if (sec) el = sec.querySelector('h3, h2');
+    if (!el) el = r.querySelector('#contenu h2');
+    if (!el) return;
+    if (!el.matches('a[href], button, input, select, textarea, summary, [tabindex]')) el.tabIndex = -1;
+    el.focus({ preventScroll: true });
+  }
   let derniereVue = null;
   function rendre() {
     const e = C.etat;
@@ -33,18 +68,20 @@
     document.title = [libVue, C.param('titre', CONFIG.titre)].filter(Boolean).join(' — ');
     const memeVue = derniereVue === e.vue + JSON.stringify(e.arg);
     const defil = memeVue ? window.scrollY : 0;
-    // Même écran redessiné : les sections dépliées le restent
-    const ouverts = memeVue ? [...C.racine().querySelectorAll('#contenu details')].map(d => d.open) : [];
+    // Même écran redessiné : les sections dépliées le restent (repérées par leur id, sinon par leur position :
+    // donner un id aux <details> d'une liste filtrable), et l'élément actif retrouve le focus.
+    // Changement d'écran : aller() place le focus sur le titre.
+    const ouverts = memeVue ? new Set([...C.racine().querySelectorAll('#contenu details')].map((d, i) => (d.open ? d.id || 'i' + i : null)).filter(Boolean)) : new Set();
+    const focus = memeVue ? repererFocus() : null;
     C.racine().innerHTML = `<div class="entete">${bandeau()}` +
       (ong.length ? `<nav class="onglets" aria-label="Rubriques">${ong.map(([v, l]) => `<button type="button" data-vue="${v}"${v === ongletDe(e.vue) ? ' aria-current="page"' : ''}>${C.esc(l)}${htmlPastille(pastille(v))}</button>`).join('')}</nav>` : '') +
       `</div><main class="contenu" id="contenu">${vue.rendre()}</main>`;
     C.signalerNouvellesFenetres(C.racine());
-    if (ouverts.length) C.racine().querySelectorAll('#contenu details').forEach((d, i) => { if (ouverts[i]) d.open = true; });
-    // Hauteur de l'en-tête fixe : les colonnes collantes se placent juste dessous
-    const ent = C.racine().querySelector('.entete');
-    if (ent) document.documentElement.style.setProperty('--h-entete', ent.offsetHeight + 'px');
+    if (ouverts.size) C.racine().querySelectorAll('#contenu details').forEach((d, i) => { if (ouverts.has(d.id || 'i' + i)) d.open = true; });
+    majHauteurEntete();
     if (vue.apres) vue.apres(C.racine());
     derniereVue = e.vue + JSON.stringify(e.arg);
+    if (focus) rendreFocus(focus);
     window.scrollTo(0, defil);
   }
 
@@ -94,6 +131,11 @@
   // L'historique est celui du cadre du chargeur (parent, même origine) : le chargeur écrit le module dans un
   // cadre intérieur par document.write, et Chrome recharge ce cadre au retour au lieu d'y revenir.
   const fenHist = (() => { try { return window.parent !== window && window.parent.history && window.parent.location.href ? window.parent : window; } catch (err) { return window; } })();
+  // Filtre, recherche ou tri d'une liste : l'état de l'écran (etat.arg) est noté dans l'entrée d'historique
+  // courante, sans en ajouter une ; un retour depuis une fiche retrouve la liste telle qu'on l'a laissée
+  function memoriser() {
+    try { fenHist.history.replaceState({ module: true, vue: C.etat.vue, arg: C.etat.arg }, ''); } catch (err) { /* sans historique */ }
+  }
   function aller(vue, arg = {}, { historique = true } = {}) {
     if (historique && (vue !== C.etat.vue || JSON.stringify(arg) !== JSON.stringify(C.etat.arg || {}))) {
       try { fenHist.history.pushState({ module: true, vue, arg }, ''); } catch (err) { /* sans historique : sans effet */ }
@@ -109,6 +151,22 @@
   // (l'écran est déjà à jour après sa propre écriture) ; absent = redessiner seulement si les données ont changé
   // (écritures des autres : veille, relecture périodique, onRecords). Les demandes rapprochées sont regroupées.
   let aRelire = null, forcer = false, siChange = false;
+  // Nature de l'élément qui a le focus : 'texte' (saisie en cours : jamais de redessin), 'choix' (liste, case,
+  // bouton radio, fichier : redessin après sa propre écriture, le focus lui est rendu ; pas pour l'écriture d'un
+  // autre, qui refermerait une liste ouverte) ou null. Chrome et Edge donnent le focus à la case ou au bouton
+  // radio cliqué : sans cette distinction, l'écran ne se met pas à jour après un choix.
+  function natureFocus(a) {
+    if (!a || !a.tagName) return null;
+    const t = a.tagName.toLowerCase(), type = String(a.type || 'text').toLowerCase();
+    if (t === 'textarea') return 'texte';
+    if (t === 'select') return 'choix';
+    if (t !== 'input') return null;
+    if (['radio', 'checkbox', 'file'].includes(type)) return 'choix';
+    if (['button', 'submit', 'reset', 'image', 'hidden'].includes(type)) return null;
+    return 'texte';
+  }
+  // force : redessin demandé par sa propre écriture ; change : relecture (écritures des autres) qui a changé les données
+  const redessinPermis = ({ nature, force, change, fenetre }) => !!((force || change) && nature !== 'texte' && !(nature === 'choix' && !force) && !fenetre);
   const empreinte = tables => tables.map(t => JSON.stringify(C.etat.doc[t] || [])).join('\u0001');
   function rafraichir(delai = 250, o = {}) {
     const tables = o.tables || C.TABLES;
@@ -125,27 +183,35 @@
         const avant = empreinte(liste);
         await C.charger(liste);
         const change = empreinte(liste) !== avant;
-        const saisie = document.activeElement && document.activeElement.matches && document.activeElement.matches('input, textarea, select');
         if (liste.includes('Connexions') && identiteChangee()) return;
-        if ((doitRendre || (surChangement && change)) && !saisie && !document.querySelector('.voile')) rendre();
+        if (redessinPermis({ nature: natureFocus(document.activeElement), force: doitRendre, change: surChangement && change, fenetre: !!document.querySelector('.voile') })) rendre();
         majPastilles(true);
       } finally { enCours = false; }
     }, delai);
   }
   // Tri d'un tableau (core.enteteTri) : la même colonne inverse le sens. Redessin sur place, sans entrée
-  // d'historique ; le focus reste sur l'en-tête choisi
+  // d'historique (mais noté dans l'entrée courante : memoriser) ; le focus reste sur l'en-tête choisi
   actions.trier = el => {
     const k = el.dataset.tri, a = C.etat.arg || {};
     const sens = k === a.tri ? (a.sens === 'desc' ? 'asc' : 'desc') : (el.dataset.sens || 'asc');
     C.etat.arg = { ...a, tri: k, sens };
+    memoriser();
     rendre();
     const b = C.racine().querySelector(`[data-action="trier"][data-tri="${k}"]`);
     if (b) b.focus();
   };
+  // Onglet cliqué : depuis une de ses sous-vues (fiche ouverte depuis la liste), la liste revient telle qu'on l'a
+  // quittée si sa vue le prévoit (argRetour() : filtres et tri notés à son dernier rendu) ; sinon, et depuis un
+  // autre onglet, elle repart à zéro
+  function argClicOnglet(cible, courante) {
+    const vu = vues[cible];
+    const retour = vu && vu.argRetour && courante !== cible && ongletDe(courante) === cible;
+    return (retour && vu.argRetour()) || {};
+  }
   function deleguer(racine) {
     racine.addEventListener('click', ev => {
       const v = ev.target.closest('[data-vue]');
-      if (v) { ev.preventDefault(); return aller(v.dataset.vue); }
+      if (v) { ev.preventDefault(); return aller(v.dataset.vue, argClicOnglet(v.dataset.vue, C.etat.vue)); }
       const a = ev.target.closest('[data-action]');
       if (a && actions[a.dataset.action]) { ev.preventDefault(); actions[a.dataset.action](a, ev); }
     });
@@ -202,10 +268,15 @@
     });
     rendre();
     majPastilles(false);
+    // L'en-tête cesse de coller en petite largeur ou petite hauteur (zoom) : la hauteur réservée suit
+    let enRedim = null;
+    window.addEventListener('resize', () => { clearTimeout(enRedim); enRedim = setTimeout(majHauteurEntete, 150); });
     grist.onRecords(() => rafraichir());
     setInterval(() => { if (!document.hidden) rafraichir(0); }, 90000);
     veiller();
   }
 
-  L.app = { actions, vues, pastilles, aller, rendre, rafraichir, demarrer, libelleRole, ongletsDuRole };
+  L.app = { actions, vues, pastilles, aller, rendre, rafraichir, memoriser, demarrer, libelleRole, ongletsDuRole,
+    // Règles pures, testées sans navigateur (module/test/app.test.js)
+    regles: { natureFocus, redessinPermis, argClicOnglet } };
 })(globalThis.Formulaire = globalThis.Formulaire || {});

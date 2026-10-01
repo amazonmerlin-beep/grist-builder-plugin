@@ -50,10 +50,21 @@ préférences, dernière visite : chacune dans sa propre table, écrite par un d
 - **Ne pas redessiner ce qui est déjà à l'écran.** Les saisies (texte, bouton basculé sur place) s'écrivent avec
   `{ rendre: false }` ; l'interface met à jour le DOM elle-même (compteurs, `aria-pressed`). Les boutons radio
   qui changent un statut affiché redessinent.
+- **Signaler l'enregistrement sur place** : `C.maj(…, { rendre: false }).then(() => C.signalerEnregistre(el))`
+  (marque verte 2 s, annonce « Modification enregistrée. » dans une zone `role="status"` hors de la racine
+  redessinée). Une phrase « Les modifications sont enregistrées automatiquement. » en tête des écrans de
+  réglages. Sans retour, une utilisatrice non technicienne ne sait pas si sa correction est prise.
 - **Redessiner seulement si les données ont changé**, pour les relectures périodiques (60 à 90 s) et
-  `grist.onRecords`, qui ne signale que la table du widget. Pas de redessin pendant une saisie ou une fenêtre
-  ouverte.
-- Quand il faut redessiner le même écran, **garder la position et les `<details>` ouverts**.
+  `grist.onRecords`, qui ne signale que la table du widget. Jamais pendant une saisie de texte ni une fenêtre
+  ouverte. **Un choix** (liste, case, bouton radio, champ fichier) **redessine après sa propre écriture** : Chrome
+  et Edge donnent le focus à la case cliquée, et l'ancien test « un champ a le focus » laissait l'écran périmé
+  (badge, bouton, avertissement inchangés) ; l'écriture d'un autre ne redessine pas, pour ne pas refermer une
+  liste ouverte (`natureFocus`, `redessinPermis` dans `app.js`, testés par `module/test/app.test.js`).
+- Quand il faut redessiner le même écran, **garder la position, les `<details>` ouverts** (retrouvés par leur
+  `id` : en donner un à ceux d'une liste filtrable, sinon c'est leur rang qui compte et il change) **et le
+  focus** : `rendre()` le rend à l'élément actif (par son `id` ou ses `data-*`), sinon au titre de sa section,
+  sinon au titre de l'écran (RGAA 12.8). Après « Passer à … », le bouton disparaît : le focus ne doit pas
+  tomber sur le document.
 - **Chaque écriture porte ses identifiants** dans l'élément qui la déclenche (`data-examen`,
   `data-critere`…). Ne jamais écrire, après un délai, dans « l'élément affiché », qui a pu changer
   entre-temps : c'est le bug classique du commentaire rattaché à la mauvaise fiche.
@@ -87,6 +98,18 @@ recharge ce cadre au lieu d'y revenir. `aller(vue, arg, { historique: false })` 
 (retour lui-même, changement d'identité). Test : `history.back()` sur la page (le `goBack()` de Playwright
 attend un chargement qui n'arrive pas).
 
+**Filtres, recherche et tri ne passent pas par `aller()`** : chaque choix pousserait une entrée d'historique
+(le retour défait les filtres un à un) et enverrait le focus au titre (au clavier, chaque flèche d'une liste
+déclenche un `change` et fait perdre la liste). Le motif : `etat.arg = { ...etat.arg, [clé]: valeur }`,
+`A.memoriser()` (note l'état dans l'entrée courante, `replaceState`), `A.rendre()`, puis focus rendu au filtre
+(exemple : `filtre-suivi` dans `vue-exemple.js`). L'action `trier` du kit fait de même ; sans `memoriser`, un
+retour depuis une fiche restaure un tri périmé.
+
+**Revenir à la liste par l'onglet parent** : depuis une fiche (vue avec `onglet: 'liste'`), un clic sur l'onglet
+surligné rappelait `aller('liste', {})` et perdait filtres et tri : qui traite une à une les fiches d'une liste
+filtrée devait refiltrer entre chacune. Une vue de liste déclare `argRetour: () => filtres` (notés à son dernier rendu) ;
+`app.js` les reprend quand on vient d'une de ses sous-vues, et repart à zéro depuis un autre onglet.
+
 ## Écrans : onglets, titres, états, listes
 
 Retours d'une recette avec le client : l'interface doit dire où l'on est sans le répéter.
@@ -116,6 +139,65 @@ Retours d'une recette avec le client : l'interface doit dire où l'on est sans l
   sens par défaut]` ; bouton dans chaque en-tête, `aria-sort` sur la colonne triée, légende masquée (« les
   boutons d'en-tête trient la liste »). Le redessin se fait sur place (pas d'entrée d'historique) et rend le
   focus au bouton cliqué ; cases vides en fin de liste dans les deux sens ; un export suit l'ordre de l'écran.
+
+## Écrans : retours d'une revue design
+
+Motifs retenus après une revue design complète d'un outil de dépôt et d'évaluation (méthode : `livraison.md`).
+- **Hiérarchie des boutons** : **un seul bouton plein par zone d'action** (l'action principale de l'écran, de la
+  carte ou de la fenêtre) ; les actions répétées sur chaque ligne ou carte en `.btn.secondaire.petit` ; retour,
+  annulation et suppression rare en lien (`.btn.lien`, `.btn.lien.danger`). Trois boutons pleins « Voir » sur
+  des cartes font perdre l'action principale de l'écran ; une action d'écriture n'a pas sa place dans un en-tête
+  de tableau de lecture (« Rouvrir » sous chaque nom de colonne : la mettre dans une ligne, avec un nom complet).
+- **Listes longues en dossiers repliés** : au-delà de quelques fiches, une liste dépliée ne se lit plus (la
+  première remplit l'écran). Un `<details class="accordeon" id="…">` par fiche, son **badge d'état** dans le
+  résumé (« Prêt », « Il manque … », « Publié le … »), une ligne de synthèse au-dessus (« 30 : 12 prêts, 14
+  incomplets, 4 publiés ») et un **filtre** sur ces états. Le badge dit ce qui distingue les fiches, pas ce
+  qu'elles ont toutes en commun.
+- **Cartes de suivi** : une **barre d'avancement** (`.avancement`, `n / total` lu « n sur total » :
+  `<span aria-hidden="true"> / </span><span class="sr-only"> sur </span>`), et sur chaque carte **l'action à
+  faire** pour la personne qui la lit : « Commencer », « Reprendre », « Consulter ». **Trier par urgence** (en
+  cours, à faire, terminé), pas par date de création. Un bouton qui mène à un écran encore fermé (« Synthèse »
+  avant l'ouverture) est une impasse : proposer à la place le geste utile du moment.
+- **Aller à l'essentiel** : quand l'action attendue est loin en bas (décision après une longue grille), un état en
+  tête d'écran (« Décision à prendre ») et un bouton « Aller à la décision » (`scrollIntoView` + focus sur le
+  titre ; pas d'ancre `href="#…"`, qui ajouterait une entrée d'historique hors du mécanisme du module) ; une
+  barre « Aller au prochain critère sans réponse » ; à la transmission, chaque manque marqué et le premier
+  focalisé (section repliée rouverte d'abord).
+- **Libellés d'affichage distincts des valeurs stockées** : une table `valeur → libellé` (« Brouillon » → « En
+  cours », « Non commencée » → « À faire ») dans la fonction de badge, rien dans les données. **Ne jamais
+  comparer le texte d'un badge** : poser `data-etat="<valeur stockée>"` et le tester. Deux statuts de sens
+  différent ne partagent pas la même couleur sur un même écran.
+- **Aucun texte de développeur devant un utilisateur métier** : clés techniques sous les libellés (en `title`
+  au plus), commandes (`npm run …`), « table X des données brutes », noms de colonnes, mentions de chantier
+  (« à fixer », « à confirmer », « posée à la construction ») dans des libellés validés, valeur brute d'un champ
+  technique (« Formulaire le 01/10 » : écrire « déposé par le formulaire public le … »). Les libellés de
+  `Parametres` se corrigent dans `schema/modele.js` puis sur les documents existants
+  (`npm run parametres`) ; une question encore ouverte va dans la liste des arbitrages, pas dans le libellé.
+- **Filtres** : sans `aller()` (voir « Bouton retour »), un compteur « 12 sur 80 » quand un filtre réduit la
+  liste, et une **liste vide qui le dit** avec « Effacer les filtres » (le tri est gardé). Pas de `role="status"`
+  sur un compteur recréé à chaque rendu : il n'est pas annoncé de façon fiable ; le focus rendu au filtre suffit.
+- **Erreurs sous le champ, pas en toast** (RGAA 11.10, 11.11) : `<p class="erreur-champ" id="…-err">` sous le
+  champ, `aria-invalid="true"` et `aria-describedby` posés seulement quand l'erreur s'affiche, focus sur le
+  champ à la validation d'un bouton. Champs obligatoires et facultatifs marqués dans le libellé visible ; un
+  `placeholder` n'est pas une étiquette (il disparaît à la saisie).
+- **Champ fichier accessible** : jamais `display: none` sur l'`input type="file"` (inatteignable au clavier) ;
+  `<label class="btn secondaire petit">Ajouter<span class="sr-only"> : <pièce></span><input type="file"
+  class="sr-only" data-action-fichier="…"></label>`, contour par `label.btn:focus-within` (`ui.css`). Des
+  boutons « Ajouter » répétés ont chacun leur nom complet.
+- **Saisie assistée avec création à la volée** (structure, organisme, catégorie) : `<input list="…">` et un
+  `<datalist>` du référentiel ; à l'enregistrement, la valeur est comparée sans accents ni casse au libellé et
+  au code ; inconnue, l'élément est créé dans le référentiel puis rattaché (une seule création par libellé),
+  et la ligne enregistrée est signalée. Placeholder court (« Choisir ou saisir ») : il est tronqué dans une
+  colonne étroite. Une liste déroulante de 200 entrées, ou un référentiel à compléter d'abord dans un autre
+  écran, ralentit tout.
+- **Ajout dans une liste** : `.note.succes` qui dit ce qui vient d'être fait et la suite (« message
+  d'invitation proposé »), ligne ajoutée surlignée (`tr.ligne-nouvelle`).
+- **Lecture seule lisible** : pas d'`opacity` sur un choix fait (contraste), le choix gardé en couleurs et les
+  autres estompés par des couleurs pleines ; boutons qui n'ont plus d'effet retirés (pas laissés actifs).
+- **CSS de retouche en fichiers séparés** : pour paralléliser des correctifs par zone (plusieurs agents, sans
+  conflit d'édition), chaque zone dépose `module/src/retouche-<zone>.css` ; `build.js` les charge **en dernier**
+  (après `ui.css` et les feuilles du projet) : à spécificité égale, ils l'emportent. Chaque règle porte en
+  commentaire le constat qu'elle corrige ; les fusionner dans les feuilles du projet une fois la recette passée.
 
 ## Pièces jointes
 
@@ -174,7 +256,18 @@ Ce que le kit fait déjà :
   chaque rendu et dans `fenetre()`, ajoute à tout `a[target=_blank]` un texte masqué « (nouvelle fenêtre) » et la
   classe `nouvelle-fenetre` (pictogramme ↗ en CSS) ;
 - en-têtes de colonne `th scope="col"` (5.7), guides Markdown compris ;
-- en-têtes de tableau qui passent à la ligne sous 760 px, classe `.defil` pour un tableau large (10.4).
+- en-têtes de tableau qui passent à la ligne sous 760 px, classe `.defil` pour un tableau large (10.4) ;
+- focus rendu après un redessin du même écran (12.8) ; enregistrement annoncé (`signalerEnregistre`) ;
+- en-tête qui **ne colle plus** en petite largeur ou petite hauteur (zoom à 200 %, `max-width: 760px` ou
+  `max-height: 560px`) et `--h-entete` remis à 0 ; onglets qui **passent à la ligne** au lieu de défiler sans
+  signe visible ; contour de focus des onglets dessiné à l'intérieur (pas rogné) ;
+- en-têtes de tableau collés **sous** l'en-tête fixe (`top: var(--h-entete)`), statiques dans un `.defil` (le
+  collage y est sans effet et le décalage descendrait la ligne d'en-tête dans le tableau) ;
+- bordure des champs à au moins 3:1 (`--c-bordure-champ`, 3.3 ; `--c-bordure` reste aux cartes) : un thème qui
+  redéfinit la règle des champs avec `--c-bordure` (souvent #DDD, 1,4:1) la casse, vérifier l'ordre des feuilles ;
+  bordure d'erreur `aria-invalid` qui l'emporte ;
+- champ fichier focalisable dans son `label.btn`, accordéons `details.accordeon`, sommaire « Dans ce guide »
+  repliable (replié sous 860 px, sans `display: none` : 10.4).
 
 À faire dans chaque écran :
 - une étiquette pour chaque champ, `aria-label` dans les tableaux (11.1) ;
@@ -191,7 +284,9 @@ Motifs utiles :
   pictogramme qui porte un sens (« avec commentaire »).
 - **Bouton icône** : `aria-label` explicite, qui dit l'action et son objet (« Commenter : question 12 »), et, si
   la place le permet, un libellé visible court à côté de l'icône (« 💬 Commenter ») ; icône en
-  `aria-hidden="true"`. Un `title` seul ne suffit pas.
+  `aria-hidden="true"`. Un `title` seul ne suffit pas. Le nom accessible **contient le texte visible**, au début
+  (« Non att. (non atteint) », pas « Non atteint » seul ; WCAG 2.5.3, RGAA 6.1) : sinon la commande vocale échoue.
+  Une bascule garde un nom fixe ; son état passe par `aria-expanded` ou `aria-pressed`.
 
 Contrôles :
 - sommaire : `node tests-e2e/rgaa.js` (axe-core, WCAG 2.1 A et AA, sur les onglets de chaque rôle) ;

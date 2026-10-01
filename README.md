@@ -36,7 +36,7 @@ vérifie et le signale s'il en manque.
 |---|---|
 | `plugins/grist-builder/skills/grist-builder/SKILL.md` | Point d'entrée : phases, signaux d'alerte |
 | `…/references/` | Cadrage, estimation, arbitrages, MCP Grist, widget, permissions, données (dont formulaire public par script), reprise d'un document existant, livraison |
-| `…/kit/` | Socle testé : Grist local et chargeur local du widget, construction scriptée (formulaire public compris), identité et règles d'accès, squelette du module (relecture ciblée, veille et pastilles, bouton retour, pièces jointes, fenêtres accessibles), tests par rôle dans Chrome par défaut, contrôles RGAA et zoom, partage nominatif, guides et notice de confidentialité, jeu d'essai, livraison |
+| `…/kit/` | Socle testé : Grist local et chargeur local du widget, construction scriptée (formulaire public compris), identité et règles d'accès, squelette du module (relecture ciblée, veille et pastilles, bouton retour, pièces jointes, fenêtres accessibles), tests par rôle dans Chrome par défaut, contrôles RGAA et zoom, captures des écrans, partage nominatif, guides et notice de confidentialité, jeu d'essai, livraison |
 | `docs/specs/` | Spécification |
 | `docs/tests/` | Scénarios de vérification du skill, sans et avec |
 
@@ -49,6 +49,29 @@ Issues et pull requests bienvenues : https://github.com/amazonmerlin-beep/grist-
 propose lui-même, une fois et avec votre accord, d'en ouvrir une après un défaut corrigé ou une idée
 réutilisable (section « Contribuer au plugin » de `SKILL.md`). Contenu généralisé : jamais de données, noms,
 adresses ou identifiants d'un client. Licence MIT.
+
+## Nouveautés 0.5.0 (revue design d'un projet client, 01/10/2026)
+
+- **Écran à jour après un choix** : une case, un bouton radio, une liste ou un champ fichier redessine l'écran
+  après sa propre écriture (Chrome et Edge leur donnent le focus) ; un champ texte en saisie le bloque toujours.
+  **Focus rendu** à l'élément actif après le redessin, sinon au titre de sa section (RGAA 12.8) ; `<details>`
+  ouverts retrouvés par leur `id`. Règles testées sans navigateur (`module/test/app.test.js`).
+- **Filtres et retour** : `memoriser()` (état noté dans l'historique sans nouvelle entrée, aussi après un tri) ;
+  `argRetour()` d'une vue de liste, pour y revenir par l'onglet parent avec ses filtres.
+- **Enregistrement signalé** : `core.signalerEnregistre(el)` (marque verte, annonce « Modification
+  enregistrée. »).
+- **CSS** : bordure des champs à 3:1 (`--c-bordure-champ`), en-tête qui ne colle plus et onglets à la ligne au
+  zoom à 200 %, en-têtes de tableau collés sous l'en-tête, focus des onglets visible, champ fichier accessible,
+  accordéons, ligne ajoutée surlignée, erreur `aria-invalid` ; `retouche-*.css` chargés en dernier
+  (`build.js`). Sommaire « Dans ce guide » repliable ; plus de texte de développeur dans l'onglet Aide.
+- **Exemple** (`vue-exemple.js`) : filtre sur place, « n sur N », liste vide avec « Effacer les filtres »,
+  erreur sous le champ, libellés de statut distincts des valeurs (`data-etat`).
+- **Outils** : `npm run captures` (captures des guides et d'une revue, contenu seul, noms réels masqués, lecture
+  seule) ; `npm run parametres` (libellés de `Parametres` alignés sur le modèle).
+- **Références** : motifs d'écran d'une revue design (hiérarchie des boutons, listes en dossiers repliés,
+  cartes avec action à faire, textes de développeur, saisie assistée avec création à la volée…) ; méthode de
+  revue multi-agents (`livraison.md`) ; formulaire public : les descriptions de colonnes ne s'affichent pas
+  (`donnees.md`) ; garde-fous d'impartialité, affichage ou règle d'accès (`permissions.md`) ; 5 signaux d'alerte.
 
 ## Nouveautés 0.4.0 (retours de la mission DITND, 01/10/2026 : recette des écrans avec le client)
 

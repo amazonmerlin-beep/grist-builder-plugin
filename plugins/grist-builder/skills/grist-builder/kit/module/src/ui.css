@@ -6,6 +6,8 @@
   --c-fond: #FFFFFF;
   --c-fond-alt: #F2F4F5;
   --c-bordure: #D3D8DC;
+  /* Bordure des champs : au moins 3:1 sur le blanc et sur --c-fond-alt (RGAA 3.3) ; --c-bordure reste aux cartes et séparateurs */
+  --c-bordure-champ: #767E86;
   --c-primaire: #1F5FA8;
   --c-action: #1F5FA8;
   --c-action-survol: #174A85;
@@ -63,15 +65,22 @@ p { margin: 0 0 12px; }
 .intro { max-width: 70ch; }
 
 /* ------------------------------------------------ boutons */
+/* Hiérarchie : un seul .btn plein par zone d'action (l'action principale de l'écran ou de la fenêtre) ; les actions
+   répétées sur chaque ligne ou carte en .btn.secondaire.petit ; retour et annulation en .btn.lien. */
 .btn { display: inline-flex; align-items: center; gap: 8px; padding: 7px 16px; border-radius: var(--rayon); border: 1px solid var(--c-action); background: var(--c-action); color: #fff; font-weight: 600; cursor: pointer; text-decoration: none; line-height: 1.35; }
 .btn:hover { background: var(--c-action-survol); border-color: var(--c-action-survol); }
 .btn.secondaire { background: var(--c-fond); color: var(--c-action); }
 .btn.secondaire:hover { background: var(--c-fond-alt); }
 .btn.lien { background: none; border-color: transparent; color: var(--c-primaire); padding-left: 2px; padding-right: 2px; text-decoration: underline; font-weight: 400; }
 .btn.danger { background: var(--c-erreur); border-color: var(--c-erreur); }
+.btn.lien.danger { background: none; border-color: transparent; color: var(--c-erreur); }
 .btn.petit { padding: 3px 10px; font-size: 13px; }
 .btn[disabled] { opacity: .45; cursor: not-allowed; }
 .actions { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; margin: 16px 0; }
+/* Champ fichier accessible au clavier : <label class="btn secondaire petit">Ajouter<span class="sr-only"> : objet</span>
+   <input type="file" class="sr-only" data-action-fichier="…"></label> ; le contour suit le focus du champ masqué */
+label.btn { position: relative; }
+label.btn:focus-within { outline: 2px solid var(--c-focus); outline-offset: 2px; }
 
 /* ------------------------------------------------ messages */
 .note { padding: 10px 14px; border-left: 3px solid var(--c-bordure); background: var(--c-fond-alt); margin: 12px 0; max-width: 74ch; }
@@ -120,12 +129,15 @@ p { margin: 0 0 12px; }
 .facultatif { font-weight: 400; color: var(--c-texte-2); font-size: 13px; margin-left: 4px; }
 .aide { font-size: 13px; color: var(--c-texte-2); margin: -2px 0 8px; max-width: 70ch; }
 .erreur-champ { color: var(--c-erreur); font-size: 13px; margin-top: 4px; }
-input[type=text], input[type=email], input[type=tel], input[type=date], input[type=search], input:not([type]), select, textarea {
-  width: 100%; max-width: 520px; padding: 6px 9px; border: 1px solid #8A949D; border-radius: var(--rayon); background: var(--c-fond);
+input[type=text], input[type=email], input[type=tel], input[type=date], input[type=search], input[type=number], input:not([type]), select, textarea {
+  width: 100%; max-width: 520px; padding: 6px 9px; border: 1px solid var(--c-bordure-champ); border-radius: var(--rayon); background: var(--c-fond);
 }
+:is(input[type=text], input[type=email], input[type=tel], input[type=date], input[type=search], input[type=number], input:not([type]), select, textarea):hover { border-color: var(--c-texte); }
 input.court { max-width: 140px; text-align: right; font-variant-numeric: tabular-nums; }
 textarea { min-height: 88px; resize: vertical; max-width: 640px; }
-input[aria-invalid="true"] { border-color: var(--c-erreur); }
+[aria-invalid="true"]:is(input, textarea, select), [aria-invalid="true"]:is(input, textarea, select):hover { border-color: var(--c-erreur); }
+/* Champ enregistré sur place (core.signalerEnregistre) : marque verte pendant 2 s */
+.champ-enregistre { border-color: var(--c-succes) !important; box-shadow: 0 0 0 1px var(--c-succes); background-color: #F3FBF5; }
 input[readonly], textarea[readonly], select[disabled], input[disabled] { background: var(--c-fond-alt); }
 .options { display: flex; flex-direction: column; gap: 3px; }
 .options.ligne { flex-direction: row; flex-wrap: wrap; gap: 4px 18px; }
@@ -149,7 +161,11 @@ input[readonly], textarea[readonly], select[disabled], input[disabled] { backgro
 
 /* ------------------------------------------------ tableaux */
 .tableau { border-collapse: collapse; width: 100%; font-size: 14px; }
-.tableau th { text-align: left; font-size: 13px; color: var(--c-texte-2); font-weight: 600; padding: 7px 10px; border-bottom: 1px solid var(--c-texte-2); white-space: nowrap; position: sticky; top: 0; background: var(--c-fond); }
+.tableau th { text-align: left; font-size: 13px; color: var(--c-texte-2); font-weight: 600; padding: 7px 10px; border-bottom: 1px solid var(--c-texte-2); white-space: nowrap; position: sticky; top: var(--h-entete, 0px); z-index: 2; background: var(--c-fond); }
+/* En-têtes collés sous l'en-tête fixe ; statiques dans un conteneur qui défile seul (le collage y est sans effet,
+   et le décalage descendrait la ligne d'en-tête dans le tableau) et en haut d'une fenêtre modale */
+.defil .tableau th { position: static; }
+.voile .tableau th { top: 0; }
 .tableau th button { background: none; border: 0; padding: 0; font: inherit; color: inherit; cursor: pointer; }
 .tableau th button.tri { display: inline-flex; gap: 4px; align-items: center; }
 .tableau th button.tri:hover { color: var(--c-action); text-decoration: underline; }
@@ -160,6 +176,10 @@ input[readonly], textarea[readonly], select[disabled], input[disabled] { backgro
 .tableau tbody tr.cliquable:hover { background: var(--c-fond-alt); }
 .tableau td.num, .tableau th.num { text-align: right; font-variant-numeric: tabular-nums; }
 .tableau tr.erreur td { background: var(--c-erreur-fond); }
+/* Ligne ajoutée (après « Ajouter ») : surlignée quelques secondes, repère vert à gauche ; confirmation en .note.succes */
+@keyframes surligner { from { background: #CDEFD8; } to { background: transparent; } }
+.tableau tr.ligne-nouvelle td { animation: surligner 4s ease-out; }
+.tableau tr.ligne-nouvelle td:first-child { box-shadow: inset 4px 0 0 var(--c-succes); }
 .filtres { display: flex; gap: 10px; flex-wrap: wrap; align-items: flex-end; margin: 0 0 16px; }
 .filtres label { font-size: 13px; color: var(--c-texte-2); display: flex; flex-direction: column; gap: 2px; }
 .filtres select, .filtres input { width: auto; min-width: 150px; }
@@ -184,6 +204,19 @@ input[readonly], textarea[readonly], select[disabled], input[disabled] { backgro
 .chiffres div { min-width: 110px; }
 .chiffres b { display: block; font-size: 22px; font-weight: 600; line-height: 1.2; font-variant-numeric: tabular-nums; }
 .chiffres span { font-size: 13px; color: var(--c-texte-2); }
+
+/* ------------------------------------------------ accordéons (listes longues, réglages) */
+/* <details class="accordeon" id="…"><summary><span class="accordeon-titre">…</span> badge d'état</summary>
+   <div class="accordeon-corps">…</div></details> ; un id stable : il reste ouvert après un redessin filtré */
+.accordeon { border: 1px solid var(--c-bordure); border-radius: var(--rayon); background: var(--c-fond); margin: 10px 0; max-width: 1100px; }
+.accordeon > summary { cursor: pointer; padding: 12px 16px; font-weight: 600; color: var(--c-primaire); list-style-position: inside; }
+.accordeon > summary:hover { background: var(--c-fond-alt); }
+.accordeon > summary .statut, .accordeon > summary .discret { font-weight: 400; vertical-align: middle; margin-left: 4px; }
+.accordeon[open] > summary { border-bottom: 1px solid var(--c-bordure); }
+.accordeon-titre { font-size: 16px; }
+.accordeon-corps { padding: 10px 16px 14px; }
+.accordeon-corps h3 { font-size: 15px; margin: 18px 0 8px; }
+.accordeon-corps h3:first-child { margin-top: 4px; }
 
 /* ------------------------------------------------ fenêtres */
 .voile { position: fixed; inset: 0; background: rgba(30,33,36,.4); display: flex; align-items: flex-start; justify-content: center; padding: 40px 16px; z-index: 40; overflow-y: auto; }
@@ -230,6 +263,8 @@ input[readonly], textarea[readonly], select[disabled], input[disabled] { backgro
 .aide-liste li button[aria-current="page"] { border-left-color: var(--c-action); font-weight: 600; color: var(--c-action); }
 .aide-sommaire a { font-size: 13px; color: var(--c-texte-2); }
 .aide-rubrique { font-size: 12px; text-transform: uppercase; letter-spacing: .04em; color: var(--c-texte-2); margin: 4px 0 6px; }
+/* Sommaire « Dans ce guide » repliable (replié en petite largeur, vue-aide.js) */
+.aide-dans-guide > summary { cursor: pointer; }
 .aide-texte { max-width: 820px; line-height: 1.6; }
 .aide-texte h1 { font-size: 24px; margin: 0 0 12px; }
 .aide-texte h2 { margin-top: 32px; padding-top: 4px; border-top: 1px solid var(--c-bordure); }
@@ -251,6 +286,8 @@ input[readonly], textarea[readonly], select[disabled], input[disabled] { backgro
 @media (max-width: 860px) {
   .page-aide { grid-template-columns: minmax(0, 1fr); gap: 12px; }
   .aide-liste { position: static; max-height: none; }
+  .aide-liste ul:not(.aide-sommaire) { display: flex; flex-wrap: wrap; gap: 2px 12px; }
+  .aide-liste li button { border-left: 0; padding: 4px 0; }
   /* Largeur moyenne ou étroite : le rail laisse place à un sélecteur de partie compact */
   .parcours { grid-template-columns: 1fr; gap: 8px; }
   .rail { display: none; }
@@ -281,3 +318,14 @@ input[readonly], textarea[readonly], select[disabled], input[disabled] { backgro
 a.nouvelle-fenetre:not(.btn)::after { content: " \2197"; font-size: .85em; }
 /* Zoom à 200 % (RGAA 10.4) : les en-têtes de tableau passent à la ligne ; un tableau large va dans .defil */
 @media (max-width: 760px) { .tableau th { white-space: normal; } }
+/* Petite largeur ou petite hauteur (zoom à 200 %) : l'en-tête ne colle plus (app.js met alors --h-entete à 0)
+   et les onglets passent à la ligne au lieu de défiler sans signe visible */
+@media (max-width: 760px), (max-height: 560px) {
+  .entete { position: static; }
+  .bandeau-sur { display: none; }
+  .bandeau .qui { font-size: 12px; }
+  .onglets { flex-wrap: wrap; overflow: visible; padding: 0 8px; }
+  .onglets button { padding: 8px 10px 6px; }
+}
+/* Contour de focus des onglets dessiné à l'intérieur : il n'est pas rogné par la barre */
+.onglets button:focus-visible { outline-offset: -3px; }

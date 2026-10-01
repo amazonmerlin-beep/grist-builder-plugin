@@ -7,9 +7,11 @@
   const e = C.etat;
 
   const guides = () => (e.doc.Guides || []).slice().sort((a, b) => (a.Ordre || 0) - (b.Ordre || 0));
-  // « Vos guides » : ceux dont le premier public est votre rôle (l'administration DF lit aussi ceux de DF)
+  // « Vos guides » : ceux dont le premier public est votre rôle (un rôle qui lit aussi les guides d'un autre les trouve sous « Autres guides »)
   const pourMoi = g => (g.Public || [])[0] === e.moi.role;
   const courant = () => { const l = guides(); return l.find(g => g.Cle === e.arg.guide) || l.find(g => pourMoi(g) && !enFin(g)) || l.find(g => !enFin(g)) || l[0]; };
+  // Largeur réduite : le sommaire « Dans ce guide » est replié, pour ne pas repousser le texte (il reste dépliable)
+  const etroit = () => !!(window.matchMedia && window.matchMedia('(max-width: 860px)').matches);
   const imageDiff = (nom, alt) => `<img data-image="${esc(nom)}" alt="${alt}" loading="lazy">`;
 
   /** Contenu d'un guide, images à résoudre ensuite par resoudreImages. {{cle}} : valeur du paramètre (« [cle à fixer] » s'il manque). */
@@ -47,8 +49,7 @@
             ['Informations', l.filter(enFin).sort((a, b) => EN_FIN.indexOf(a.Cle) - EN_FIN.indexOf(b.Cle))]].filter(([, xs]) => xs.length).map(([titre, xs]) => `
           <p class="aide-rubrique">${titre}</p>
           <ul>${xs.map(x => `<li><button type="button" data-action="guide" data-cle="${esc(x.Cle)}"${x.id === g.id ? ' aria-current="page"' : ''}>${esc(x.Titre)}</button></li>`).join('')}</ul>`).join('')}
-          ${som.length > 1 ? `<p class="aide-rubrique">Dans ce guide</p><ul class="aide-sommaire">${som.map(s => `<li><a href="#${s.ancre}" data-action="ancre" data-ancre="${s.ancre}">${esc(s.texte)}</a></li>`).join('')}</ul>` : ''}
-          ${C.estAdmin() ? '<p class="discret petit">Les guides se modifient dans la table Guides des données brutes (texte au format Markdown, captures en pièces jointes).</p>' : ''}
+          ${som.length > 1 ? `<details class="aide-dans-guide" id="aide-dans-guide"${etroit() ? '' : ' open'}><summary class="aide-rubrique">Dans ce guide</summary><ul class="aide-sommaire">${som.map(s => `<li><a href="#${s.ancre}" data-action="ancre" data-ancre="${s.ancre}">${esc(s.texte)}</a></li>`).join('')}</ul></details>` : ''}
         </nav>
         <article class="aide-texte">${g.Resume ? `<p class="aide-resume">${esc(g.Resume)}</p>` : ''}${rendreGuide(g)}
           <p class="discret petit aide-contact">Une question ? ${esc(C.param('contact_nom', 'l’équipe du projet'))} : <a href="mailto:${esc(C.param('contact_email'))}">${esc(C.param('contact_email'))}</a></p>
