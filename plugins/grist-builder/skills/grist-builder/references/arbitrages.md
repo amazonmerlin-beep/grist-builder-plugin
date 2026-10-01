@@ -6,7 +6,7 @@ l'instance (H), nous (N).
 
 | Décision | Par défaut | Qui | Remarque |
 |---|---|---|---|
-| Accès au document | Lien partagé « accès public, éditeur », filtré par l'annuaire | H, C | Sinon invitations nominatives (plus lourd). Accord écrit de l'hébergeur si données personnelles |
+| Accès au document | Lien partagé « accès public, éditeur », filtré par l'annuaire | H, C | Sinon invitations nominatives (plus lourd ; chaque invité lit les adresses des autres invités, à dire dans la notice). Accord écrit de l'hébergeur si données personnelles. Limites du lien « éditeur » : rechargement forcé, pièces orphelines, choix des colonnes réservés aux propriétaires (`permissions.md`) |
 | Envoi des courriels | Depuis la messagerie du client (lots en copie cachée, publipostage) | H | Priorité à vérifier : si l'instance envoie les courriels de Grist, les invitations deviennent simples |
 | Rôles | Répondant (par entité), pilotage (lit tout), administration (comptes, paramètres) | C | Ajouter partenaire technique, lecteur extérieur si besoin |
 | Propriétaires du document | Un référent du client et nous pendant le projet, le client seul ensuite | C | Un propriétaire voit et modifie tout : deux ou trois personnes au plus |

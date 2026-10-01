@@ -55,6 +55,26 @@ pendant une saisie ni une fenêtre ; après un choix, seulement pour sa propre �
 parent (`argRetour` depuis une sous-vue seulement). Non couverts sans navigateur : le focus rendu après redessin,
 la hauteur d'en-tête au zoom, le masquage des noms dans les captures. Les sélecteurs des parcours sont gardés
 (`#f-Q1_Nom`, `[data-action="transmettre"]`, une ligne par entité dans le suivi sans filtre).
+
+### Second lot : règles d'accès (relecture d'un projet client)
+
+Failles prouvées par l'API sur le document d'essais du projet (un client par compte de test), portées de façon
+générique. Même contrainte : **ni Grist, ni Docker, ni Chrome** ; les formules ne peuvent donc pas être
+compilées par le moteur.
+
+| Contrôle | Résultat |
+|---|---|
+| `node --check` (acces.js, modele.js, acces.test.js, formulaire.exemple.js, appliquer-regles.js, partager.js, tests-e2e/acces.test.js) | sans erreur |
+| Tests unitaires (`npm test`) | 20 / 20 (dont 6 nouveaux : `schema/acces.test.js`) |
+| Syntaxe Python des 35 formules (règles et modèle, `$x` lu `rec.x`), `ast.parse(mode='eval')` | toutes valides |
+| `claude plugin validate` (marketplace et plugin) | validation réussie |
+| Compilation par Grist (`aclFormulaParsed`), `npm run test:acces` (4 cas nouveaux), `npm run regles` | **non lancés** |
+
+`schema/acces.test.js` vérifie, sans Grist : forme des permissions et formules sans syntaxe JavaScript ;
+`newRec` jamais avec R ou S ; toute règle `+C` hors administration conditionnée par la ligne ; statut borné
+avant une modification ouverte (table à colonne `Statut`) ; garde `newRec.Doublon` avant la règle
+d'administration (table à colonne `Doublon`) ; colonnes `reservee` à déclencheur sur elles-mêmes et formule
+`… if user.ShareRef else value`. Les deux cas du formulaire public se sautent sans `schema/formulaire.js`.
 ## Version 0.4.0 (01/10/2026) : retours de la mission DITND, recette des écrans
 
 Copie fraîche du kit, Grist local séparé (port 8486, compose `grist-kit-verif`, supprimé ensuite), Chrome par

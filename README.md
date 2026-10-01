@@ -36,7 +36,7 @@ vérifie et le signale s'il en manque.
 |---|---|
 | `plugins/grist-builder/skills/grist-builder/SKILL.md` | Point d'entrée : phases, signaux d'alerte |
 | `…/references/` | Cadrage, estimation, arbitrages, MCP Grist, widget, permissions, données (dont formulaire public par script), reprise d'un document existant, livraison |
-| `…/kit/` | Socle testé : Grist local et chargeur local du widget, construction scriptée (formulaire public compris), identité et règles d'accès, squelette du module (relecture ciblée, veille et pastilles, bouton retour, pièces jointes, fenêtres accessibles), tests par rôle dans Chrome par défaut, contrôles RGAA et zoom, captures des écrans, partage nominatif, guides et notice de confidentialité, jeu d'essai, livraison |
+| `…/kit/` | Socle testé : Grist local et chargeur local du widget, construction scriptée (formulaire public compris), identité et règles d'accès, squelette du module (relecture ciblée, veille et pastilles, bouton retour, pièces jointes, fenêtres accessibles), tests par rôle dans Chrome par défaut, contrôles RGAA et zoom, captures des écrans, règles appliquées à un document existant, partage nominatif (simulation par défaut), guides et notice de confidentialité, jeu d'essai, livraison |
 | `docs/specs/` | Spécification |
 | `docs/tests/` | Scénarios de vérification du skill, sans et avec |
 
@@ -72,6 +72,24 @@ adresses ou identifiants d'un client. Licence MIT.
   cartes avec action à faire, textes de développeur, saisie assistée avec création à la volée…) ; méthode de
   revue multi-agents (`livraison.md`) ; formulaire public : les descriptions de colonnes ne s'affichent pas
   (`donnees.md`) ; garde-fous d'impartialité, affichage ou règle d'accès (`permissions.md`) ; 5 signaux d'alerte.
+
+Relecture des règles d'accès d'un projet client (même jour : failles prouvées par l'API, portage générique) :
+
+- **Formulaire public** : le dépôt par la clé de partage passe outre les règles du document ; colonnes
+  réservées protégées dans le modèle par `reservee()` (`schema/modele.js`, appliqué au statut des réponses) ;
+  plus de statut dans `formulaire.exemple.js`.
+- **Règles du kit** (`schema/acces.js`) : nom de la connexion = `user.Name` à la création ; statut des réponses
+  borné ; principes en tête du fichier (création contrainte par `newRec`, auteur ET encore autorisé, garde de
+  doublon avant l'administration).
+- **Tests** : `schema/acces.test.js` (relecture automatique des règles, sans Grist, dans `npm test`) ; 4 cas de
+  droits de plus (nom usurpé, statut hors liste, écriture après désactivation, colonnes réservées d'un dépôt
+  anonyme).
+- **Outils** : `npm run regles` (`outils/appliquer-regles.js` : règles appliquées à un document existant,
+  colonnes d'aide ajoutées, déclencheurs alignés, `--simulation`, compilation contrôlée) ; `npm run partager`
+  ne fait plus qu'une simulation sans `--oui` (chaque compte partagé nominativement lit les adresses des autres).
+- **Références** (`permissions.md`) : création à la règle de table, appartenance, statut borné, références
+  invalides, fuites par les formules, pièces sensibles et notice, partage nominatif revu, limites de « public,
+  éditeur », points vérifiés sains, méthode de relecture des droits ; 5 signaux d'alerte.
 
 ## Nouveautés 0.4.0 (retours de la mission DITND, 01/10/2026 : recette des écrans avec le client)
 

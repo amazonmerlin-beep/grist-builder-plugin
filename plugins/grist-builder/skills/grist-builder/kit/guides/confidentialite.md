@@ -64,7 +64,8 @@ Seules les personnes habilitées, qui en ont besoin pour leur mission, ont accè
 de fait (développeur, administrateur de l'instance Grist).
 
 Dans le document, chacun ne voit que ce que son rôle autorise : un répondant ne voit que les réponses de son
-entité ; **à fixer** (ce que voit chaque rôle).
+entité ; **à fixer** (ce que voit chaque rôle, pièces jointes comprises : relire ce passage contre les règles
+d'accès des colonnes de pièces, par exemple des CV réservés à l'administration).
 
 ## Qui nous aide à traiter les données ?
 

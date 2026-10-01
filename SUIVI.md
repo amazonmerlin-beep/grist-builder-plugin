@@ -100,10 +100,18 @@ focus des onglets, `.champ-enregistre`, `aria-invalid`, champ fichier, accordéo
 livraison (méthode de revue, captures), donnees (descriptions invisibles dans le formulaire public), permissions
 (impartialité) ; SKILL.md : 5 signaux d'alerte. Vérification : `docs/tests/verification.md` (sans Chrome).
 
+Second lot (même jour) : relecture des règles d'accès d'un projet client, failles prouvées par l'API sur un
+document d'essais. Kit : `reservee()` dans `schema/modele.js` (statut des réponses), règles (nom de connexion,
+statut borné, principes en tête), `schema/acces.test.js` (6 contrôles sans Grist), 4 cas ajoutés à
+`tests-e2e/acces.test.js`, `outils/appliquer-regles.js` (`npm run regles`), `partager.js` en simulation sans
+`--oui`, `formulaire.exemple.js` sans statut, notice (pièces jointes). Références : permissions (création,
+appartenance, statut, doublons, références, formules, pièces, partage nominatif revu, limites de « public,
+éditeur », vérifié sain, méthode), donnees, livraison, arbitrages ; SKILL.md : 5 signaux d'alerte.
+
 ## e) Prochaines actions
 1. Faire installer le plugin par un collègue (README) et recueillir ses retours.
 2. Ajouter au kit, si les projets le demandent : outil des comptes en masse, jeu de démonstration (voir LAPI).
-3. Rejouer sur une copie fraîche du kit les contrôles Chrome de la 0.5.0 (parcours, axe-core, zoom, `npm run captures`), non lancés faute de mémoire.
+3. Rejouer sur une copie fraîche du kit les contrôles Chrome de la 0.5.0 (parcours, axe-core, zoom, `npm run captures`), non lancés faute de mémoire ; et les tests de droits (`npm run test:acces`, avec `schema/formulaire.js` copié de l'exemple pour les deux cas du formulaire), `npm run regles -- --simulation` puis sans, sur ce document.
 4. Essayer la section « Contribuer au plugin » sur un vrai projet (première issue proposée par le skill).
 
 ## Notes

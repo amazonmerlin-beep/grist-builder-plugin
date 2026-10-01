@@ -20,7 +20,8 @@ module.exports = {
     ],
     [
       { col: 'Entite', requis: true, question: 'Code de votre entité' },
-      { col: 'Statut', question: 'État de votre réponse' },
+      // Jamais de colonne réservée dans le formulaire (statut, contrôle, notes internes, publication, origine) :
+      // le dépôt passe outre les règles d'accès ; le modèle les ramène à leur défaut (modele.js, « reservee »).
     ],
     [
       { col: 'Q1_Nom', question: 'Nom de la personne qui répond', lignes: 2 },

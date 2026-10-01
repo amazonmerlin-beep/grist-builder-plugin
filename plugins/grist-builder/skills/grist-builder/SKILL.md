@@ -48,7 +48,9 @@ montre le motif).
 4. `npm run construire`, puis `npm run deployer` ; ouvrir `http://localhost:8484/o/docs/doc/<urlId>`
    (connexion de test : `/test/login?username=<adresse>`).
 5. `npm test`, `npm run test:acces`, `npm run test:parcours`, `npm run test:rgaa`, `npm run test:zoom` ;
-   `npm run captures` puis `npm run guides` ; `npm run partager` ; `npm run livrer`.
+   `npm run captures` puis `npm run guides` ; `npm run livrer`. Correctif de droits sur un document existant :
+   `npm run regles` (`--simulation` d'abord). `npm run partager` seulement en connaissance de cause
+   (`permissions.md`).
 6. Essai sur une instance réelle : nom et `--adresse` distincts de la production, `outils/jeu-essai.js`,
    appels comptés (`livraison.md`).
 
@@ -93,6 +95,11 @@ Vérifier et, s'il en manque, le dire au consultant.
 | « Le filtre appelle `aller()` » | Filtre sur place + `memoriser()`, focus rendu au filtre, « n sur N », liste vide avec « Effacer les filtres » ; retour par l'onglet avec `argRetour` |
 | « Je teste le texte du badge » | Libellés d'affichage séparés des valeurs stockées : tester `data-etat` ; aucun texte de développeur à l'écran (`widget.md`) |
 | « L'aide du formulaire public est dans la description de la colonne » | Elle ne s'affiche pas : option `question` ou paragraphe après le champ (`donnees.md`) |
+| « Le formulaire public est filtré par les règles d'accès » | Le dépôt par la clé de partage passe outre : colonnes réservées protégées dans le modèle (`reservee()`, `permissions.md`) |
+| « J'ai fermé la colonne en écriture (`-U`), on ne peut pas la remplir » | Les règles de colonne ne décident que R et U : la création se contraint à la règle de table (`newRec` : statut initial, auteur, nom) |
+| « La règle vérifie que c'est son auteur : suffisant » | Auteur ET encore autorisé (membre, actif) ; statut borné ; garde de doublon avant la règle d'administration |
+| « Je partage nominativement pour que chacun trouve le document » | Chaque compte partagé lit les adresses de tous les autres (`/access`) : avec le lien, pas de partage nominatif |
+| « J'ai relu les règles, elles sont bonnes » | Chaque faille se prouve par l'API, un client par compte de test, document d'essais, puis un test par correctif (`permissions.md`) |
 | « La revue design se fait en lisant le code » | Captures de tous les écrans et états sur un document de test d'abord (`npm run captures`), une zone par agent, vérificateur adverse contre les décisions du client (`livraison.md`) |
 
 ## Contribuer au plugin

@@ -6,7 +6,21 @@ const { roles, titre, contactEmail } = require('../projet.config');
 
 const ROLES = Object.keys(roles);
 const TZ = 'DateTime:Europe/Paris';
+const STATUTS = ['Brouillon', 'Transmis'];
 const DATETIME = { dateFormat: 'DD/MM/YYYY', isCustomDateFormat: true, timeFormat: 'HH:mm', isCustomTimeFormat: true };
+
+// Colonne réservée (statut de contrôle, notes internes, publication, rattachement à une référence, origine,
+// identifiant de reprise…) d'une table qui reçoit un formulaire public. Un dépôt par la clé de partage du
+// formulaire passe outre les règles d'accès du document (même une règle « user.ShareRef → -C » placée avant,
+// même des règles de colonne) : il peut écrire n'importe quelle colonne. Un déclencheur sur la colonne
+// elle-même rend la valeur par défaut quand user.ShareRef est posé (ce dépôt seulement) ; les autres
+// écritures (administration, reprise, module) sont gardées. Une date fournie au dépôt reste falsifiable.
+// Le kit l'applique au statut des réponses ; outils/appliquer-regles.js aligne ces déclencheurs sur un
+// document existant.
+const reservee = (c, defaut = 'None') => ({
+  ...c, reservee: true, declencheur: [c.id],
+  formule: `${defaut} if user.ShareRef else ${['None', 'False'].includes(defaut) ? 'value' : `(value or ${defaut})`}`,
+});
 
 const TABLES = [
   {
@@ -56,7 +70,9 @@ const TABLES = [
     id: 'Reponses',
     colonnes: [
       { id: 'Entite', type: 'Text', label: 'Entité' },
-      { id: 'Statut', type: 'Choice', label: 'Statut', options: { choices: ['Brouillon', 'Transmis'] } },
+      // Statut initial imposé à un dépôt par le formulaire public (schema/formulaire.js), sinon il arriverait
+      // déjà « Transmis » ; les valeurs hors liste sont refusées par les règles (acces.js)
+      reservee({ id: 'Statut', type: 'Choice', label: 'Statut', options: { choices: STATUTS } }, '"Brouillon"'),
       { id: 'Q1_Nom', type: 'Text', label: '1. Nom du répondant' },
       { id: 'Q2_Effectif', type: 'Int', label: '2. Effectif' },
       { id: 'Modifie_par', type: 'Text', label: 'Modifié par', formule: 'user.Email', declencheur: 'modif' },
@@ -84,4 +100,4 @@ const PARAMETRES = [
   ['contact_email', contactEmail, 'Adresse de contact affichée aux comptes non reconnus'],
 ];
 
-module.exports = { TABLES, PARAMETRES, ROLES };
+module.exports = { TABLES, PARAMETRES, ROLES, STATUTS, reservee };

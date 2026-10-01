@@ -8,7 +8,7 @@
     "grist:arreter": "docker compose -f grist-local/docker-compose.yml stop",
     "construire": "node outils/construire.js",
     "deployer": "node module/build.js && node outils/deployer-module.js",
-    "test": "node --test \"module/test/*.test.js\"",
+    "test": "node --test \"module/test/*.test.js\" \"schema/*.test.js\"",
     "test:acces": "node --test tests-e2e/acces.test.js",
     "test:parcours": "node --test --test-concurrency=1 tests-e2e/parcours.test.js",
     "guides": "node outils/charger-guides.js",
@@ -17,7 +17,8 @@
     "test:rgaa": "node tests-e2e/rgaa.js",
     "test:zoom": "node tests-e2e/zoom.js",
     "captures": "node tests-e2e/captures-guides.js",
-    "parametres": "node outils/aligner-libelles-parametres.js"
+    "parametres": "node outils/aligner-libelles-parametres.js",
+    "regles": "node outils/appliquer-regles.js"
   },
   "devDependencies": {
     "playwright": "1.63.0"

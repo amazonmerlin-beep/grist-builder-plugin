@@ -2,6 +2,13 @@
 // Règles d'accès. Pour chaque permission, la première règle qui s'applique décide : l'ordre compte.
 // user.Moi = la ligne de l'annuaire dont l'adresse est user.Email (attribut posé sur la table par défaut).
 // Un rôle vide (compte inconnu ou désactivé) ne voit rien, sauf Parametres, ses connexions et les guides « inconnu ».
+// Une création se contrôle par la règle de TABLE (newRec) : les règles de colonne ne décident que R et U.
+// Toute règle qui ouvre +C contraint donc newRec (statut initial, auteur = user, nom = user.Name). Les colonnes
+// à déclencheur gardent la valeur fournie à la création : la vérifier, ou la savoir falsifiable (dates).
+// Écrire = être l'auteur ET encore autorisé : un rôle désactivé ou une entité changée retire le droit d'écrire.
+// Exception : un dépôt par le formulaire public passe outre ces règles (voir modele.js, « reservee »).
+// Une règle d'administration placée en premier court-circuite les gardes d'intégrité (doublons) qui suivent :
+// [`${ADMIN} and newRec.Doublon`, '-C'] AVANT [ADMIN, '+CRUD'] quand une table en a.
 const PROPRIO = 'user.Access in [OWNER]';
 const ROLE = 'user.Moi.Role_effectif';
 const CONNU = ROLE;
@@ -9,6 +16,7 @@ const ADMIN = `${ROLE} == "admin"`;
 const PILOTE = `${ROLE} in ["pilote", "admin"]`;
 const REP = `${ROLE} == "repondant"`;
 const MEME = 'rec.Entite == user.Moi.Entite';
+const { STATUTS } = require('./modele');
 const ATTRIBUT_MOI = { name: 'Moi', tableId: 'Annuaire', lookupColId: 'Email', charId: 'Email' };
 
 function jeux() {
@@ -46,6 +54,7 @@ function jeux() {
       table: 'Connexions', colonnes: '*',
       regles: [
         [PROPRIO, '+CRUD'],
+        ['newRec.Nom != user.Name', '-C', 'Le nom vient de la session, pas de la saisie'],
         [PILOTE, '+R-UD', 'Pilotage : lit toutes les connexions'],
         ['rec.Email == user.Email', '+CR-UD', 'Chacun crée et lit ses propres connexions (identité du module)'],
         ['', '-CRUD'],
@@ -57,11 +66,14 @@ function jeux() {
     },
     // Formulaire public (schema/formulaire.js) sur une table fermée : ajouter à cette table, avant la règle finale,
     // [ 'user.ShareRef', '+C-RUD', 'Formulaire public : création seulement, sans rien lire' ]
+    // Cette règle ferme la lecture ; elle ne filtre PAS ce qui est déposé (ni newRec, ni les règles de colonne) :
+    // les colonnes réservées se protègent dans le modèle (modele.js, « reservee »).
     {
       table: 'Reponses', colonnes: '*',
       regles: [
         [PROPRIO, '+CRUD'],
         [PILOTE, '+R-CUD', 'Pilotage : lit toutes les réponses'],
+        [`${REP} and newRec.Statut not in [${STATUTS.map(s => `"${s}"`).join(", ")}]`, '-U', 'Statut : valeurs de la liste seulement'],
         [`${REP} and ${MEME} and rec.Statut == "Brouillon"`, '+RU-CD', 'Répondant : modifie la réponse de son entité tant qu’elle est en brouillon'],
         [`${REP} and ${MEME}`, '+R-CUD', 'Répondant : lit sa réponse transmise'],
         ['', '-CRUD'],

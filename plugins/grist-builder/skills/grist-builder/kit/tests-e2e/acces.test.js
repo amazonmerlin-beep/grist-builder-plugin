@@ -40,8 +40,10 @@ test('compte inconnu : ne lit rien, sauf les paramètres et ses connexions ; ne 
   await refuse(c.inconnu.appliquer(DOC, [['AddTable', 'Pirate', [{ id: 'A' }]]]), 'créer une table');
 });
 
-test('connexion : impossible d’écrire l’adresse de quelqu’un d’autre', async () => {
+test('connexion : impossible d’écrire l’adresse ni le nom de quelqu’un d’autre', async () => {
   await refuse(c.inconnu.ajouter(DOC, 'Connexions', [{ Email: 'admin@projet.test' }]), 'usurpation');
+  // Une règle +C contraint newRec : sans elle, le nom fourni à la création serait gardé (déclencheur à l'ajout)
+  await refuse(c.inconnu.ajouter(DOC, 'Connexions', [{ Nom: 'Admin projet', Version: 'test' }]), 'nom d’un autre');
 });
 
 test('répondant : ne voit et ne modifie que la réponse de son entité, jusqu’à la transmission', async () => {
@@ -53,6 +55,7 @@ test('répondant : ne voit et ne modifie que la réponse de son entité, jusqu�
   const autre = (await proprio.lignes(DOC, 'Reponses')).find(r => r.Entite !== entite);
   await refuse(g.modifier(DOC, 'Reponses', [{ id: autre.id, Q1_Nom: 'x' }]), 'autre entité');
   await refuse(g.modifier(DOC, 'Reponses', [{ id: reps[0].id, Entite: autre.Entite }]), 'changer d’entité');
+  await refuse(g.modifier(DOC, 'Reponses', [{ id: reps[0].id, Statut: 'Validé' }]), 'statut hors liste');
   await g.modifier(DOC, 'Reponses', [{ id: reps[0].id, Statut: 'Transmis' }]);
   await refuse(g.modifier(DOC, 'Reponses', [{ id: reps[0].id, Q1_Nom: 'après envoi' }]), 'après transmission');
 });
@@ -69,9 +72,13 @@ test('admin : gère les comptes ; adresse ramenée en minuscules ; compte désac
   const a = (await proprio.lignes(DOC, 'Annuaire')).find(x => x.id === id);
   assert.equal(a.Email, 'nouveau.compte@entite.test', 'adresse normalisée');
   const nouveau = await client('nouveau.compte@entite.test', 'Nouveau');
-  assert.deepEqual((await lire(nouveau, 'Reponses')).map(r => r.Entite), ['E03']);
+  const [e03] = await lire(nouveau, 'Reponses');
+  assert.equal(e03 && e03.Entite, 'E03');
+  await nouveau.modifier(DOC, 'Reponses', [{ id: e03.id, Q1_Nom: 'actif' }]);
   await c.admin.modifier(DOC, 'Annuaire', [{ id, Actif: false }]);
   assert.equal((await lire(nouveau, 'Reponses')).length, 0, 'désactivé : ne voit plus rien');
+  // Écrire = être de l'entité ET encore autorisé : un compte retiré ne continue pas sa réponse
+  await refuse(nouveau.modifier(DOC, 'Reponses', [{ id: e03.id, Q1_Nom: 'après retrait' }]), 'désactivé : ne modifie plus');
   await c.admin.appliquer(DOC, [['RemoveRecord', 'Annuaire', id]]);
 });
 
@@ -113,4 +120,30 @@ test('formulaire public (si schema/formulaire.js) : un anonyme crée une ligne, 
   assert.equal(((await lu.json()).records || []).length, 0, 'lecture anonyme : rien');
   assert.equal((await proprio.lignes(DOC, TABLE)).length, avant + 1);
   await proprio.appliquer(DOC, [['RemoveRecord', TABLE, id]]);
+});
+
+test('formulaire public (si schema/formulaire.js) : les colonnes réservées reviennent à leur défaut ; l’administration les écrit', async t => {
+  // Le dépôt par la clé de partage passe outre les règles du document : la protection est dans le modèle
+  // (modele.js, « reservee » : déclencheur sur la colonne elle-même, valeur par défaut quand user.ShareRef)
+  const lien = (docCourant() || {}).lienFormulaire;
+  if (!lien) return t.skip('pas de formulaire public dans ce projet');
+  const { TABLE } = require('../schema/formulaire');
+  const { TABLES } = require('../schema/modele');
+  const reservees = ((TABLES.find(x => x.id === TABLE) || {}).colonnes || []).filter(x => x.reservee);
+  if (!reservees.length) return t.skip(`aucune colonne « reservee » dans ${TABLE}`);
+  const cleForm = /forms\/([^/]+)\//.exec(lien)[1];
+  // Valeur « forcée » par colonne réservée, selon son type
+  const force = x => (x.type === 'Bool' ? true : /^(Int|Numeric|Ref:)/.test(x.type) ? 1 : x.type === 'Choice' ? ((x.options || {}).choices || []).slice(-1)[0] : 'forcé');
+  const fields = Object.fromEntries(reservees.map(x => [x.id, force(x)]));
+  const r = await fetch(`${BASE}/api/s/${cleForm}/tables/${TABLE}/records`, { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest' }, body: JSON.stringify({ records: [{ fields }] }) });
+  assert.equal(r.status, 200, await r.clone().text());
+  const { records: [{ id }] } = await r.json();
+  try {
+    const d = (await proprio.lignes(DOC, TABLE)).find(x => x.id === id);
+    for (const x of reservees) assert.notDeepEqual(d[x.id], fields[x.id], `${x.id} : la valeur du déposant est écartée`);
+    // Hors formulaire (administration, reprise, module), la valeur écrite est gardée
+    await proprio.modifier(DOC, TABLE, [{ id, ...fields }]);
+    const e = (await proprio.lignes(DOC, TABLE)).find(x => x.id === id);
+    for (const x of reservees) assert.deepEqual(e[x.id], fields[x.id], `${x.id} : écrite par l’administration`);
+  } finally { await proprio.appliquer(DOC, [['RemoveRecord', TABLE, id]]); }
 });

@@ -37,6 +37,8 @@ Un formulaire Grist est une section `form` sur la table cible. Il se publie sans
 Le kit le fait d'après `schema/formulaire.js` (modèle : `schema/formulaire.exemple.js`) :
 `{ TABLE, TITRE, SECTIONS }`, la première liste de `SECTIONS` étant l'en-tête, chacune des suivantes une partie ;
 un élément vaut `{ texte }` (Markdown) ou `{ col, requis?, question?, lignes? }`.
+**Le dépôt passe outre les règles d'accès** : aucune colonne réservée dans le formulaire, et chacune protégée
+dans le modèle par `reservee()` (valeur par défaut quand `user.ShareRef`, `permissions.md`).
 
 1. **Créer la section** : `['CreateViewSection', <tableRef>, 0, 'form', null, null]` → `{ viewRef, sectionRef }`.
    Supprimer les champs créés d'office, puis ajouter les siens :

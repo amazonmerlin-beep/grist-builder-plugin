@@ -99,8 +99,8 @@ valeur, ou par « [contact_email à fixer] ».
 2. Chez le client : importer le `.grist` ; renseigner les paramètres (contact, lien du document, dates, adresse
    du formulaire public, qui change à l'import) ; ajouter les administrateurs dans l'annuaire (un propriétaire
    absent de l'annuaire voit l'écran « compte non reconnu ») ; importer les comptes ; régler le partage (lien
-   ou invitations, tout le monde « Éditeur ») ; partage nominatif pour que chacun trouve le document dans sa
-   liste (`npm run partager`) ; propriétaires. Le `.grist` livré utilise le chargeur public. Messages
+   ou invitations, tout le monde « Éditeur ») ; avec le lien, pas de partage nominatif (chaque compte partagé
+   lirait les adresses de tous les autres, `permissions.md`) : envoyer le lien direct ; propriétaires. Le `.grist` livré utilise le chargeur public. Messages
    d'invitation et guides donnent le lien direct du document, jamais l'accueil de l'espace.
 3. Essai avec un compte de test par rôle, puis pilote avec deux ou trois entités avant l'ouverture.
 4. Passation : où est quoi, comment reconstruire, les décisions prises, les points ouverts.
