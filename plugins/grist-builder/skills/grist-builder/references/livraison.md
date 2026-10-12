@@ -21,6 +21,9 @@
   reconstruction ou écriture recharge la page de la personne qui regarde.
 - **Mesurer la fluidité** : compter les relectures (`fetchTable`) et les redessins, au repos et après un clic.
   Au repos : zéro. Après une saisie : la ou les tables concernées, sans redessin.
+- **Nettoyer ou réorganiser le CSS sans rien changer** : `node outils/styles/releve.js avant.json`, modifier,
+  déployer, `releve.js apres.json`, puis `node outils/styles/comparer.js avant.json apres.json` : zéro différence
+  attendue (styles calculés de chaque élément, onglet par onglet, rôle par rôle). Les survols ne sont pas relevés.
 - **Accessibilité sommaire** : `node tests-e2e/rgaa.js` (axe-core sur les onglets de chaque rôle) et
   `node tests-e2e/zoom.js` (zoom à 200 %, `widget.md`). Viser zéro violation et zéro débordement. Consigner les
   points qu'un outil automatique ne voit pas (lecteur d'écran, clavier seul).

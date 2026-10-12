@@ -70,6 +70,9 @@ préférences, dernière visite : chacune dans sa propre table, écrite par un d
   entre-temps : c'est le bug classique du commentaire rattaché à la mauvaise fiche.
 - Une seule création à la fois par clé : deux clics rapides ne font pas deux fiches. Attendre les écritures
   en cours avant une transmission.
+- **Un échec d'écriture reste visible** jusqu'au prochain succès : repère près de la saisie (« Non
+  enregistré : … recommencez », en alerte), gardé dans l'état de la vue pour survivre aux redessins. Un message
+  éphémère ne suffit pas ; `core.toast(…, 'erreur')` reste affiché jusqu'à ce qu'on le ferme.
 
 ## Voir le nouveau sans recharger : veille, pastilles, changement d'identité
 
@@ -198,6 +201,16 @@ Motifs retenus après une revue design complète d'un outil de dépôt et d'éva
   conflit d'édition), chaque zone dépose `module/src/retouche-<zone>.css` ; `build.js` les charge **en dernier**
   (après `ui.css` et les feuilles du projet) : à spécificité égale, ils l'emportent. Chaque règle porte en
   commentaire le constat qu'elle corrige ; les fusionner dans les feuilles du projet une fois la recette passée.
+
+## Saisir en lisant une pièce
+
+Quand la saisie se fait en lisant les pièces du dossier (grille de notation, contrôle de complétude), la pièce
+s'affiche **dans la page, à côté de la saisie** : la colonne de droite s'élargit et affiche l'aperçu (`lirePiece`,
+blob dans un `<iframe>` ou une `<img>`), la liste latérale se replie, les attendus restent dessous ; boutons
+« Ouvrir dans un onglet » et « Fermer le document ». Une fenêtre modale (`C.fenetre`) masque la saisie et oblige
+à noter de mémoire : la garder pour l'écran étroit (moins de 760 px) et les consultations ponctuelles. L'état
+du document ouvert (identifiant, adresse blob) se garde dans la vue, pour qu'un redessin le rouvre ;
+`URL.revokeObjectURL` à la fermeture.
 
 ## Pièces jointes
 

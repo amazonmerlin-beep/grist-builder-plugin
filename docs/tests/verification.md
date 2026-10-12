@@ -35,6 +35,25 @@ la 0.2.0 (après).
 - 0 violation d'accessibilité ;
 - `.grist` livré avec le chargeur public.
 
+## Version 0.6.0 (12/10/2026) : revue d'interface de la DITND avec impeccable
+
+Leçons d'une revue d'interface du module DITND (deux critiques impeccable, 25/40 puis 27/40). Sous-agents
+Sonnet, avec la 0.5.0 (avant) puis la 0.6.0 (après) ; seules les leçons qui échouaient avant ont été écrites.
+
+| Scénario | 0.5.0 (avant) | 0.6.0 (après) |
+|---|---|---|
+| S9. Section « Décision de la commission » | **Déjà conforme** (mesuré sur la 0.2.0) : bouton « Enregistrer », confirmation, une écriture, motivation exigée | Rien d'écrit |
+| S10. Vue « grille » (29 critères, pièces à consulter, clavier), consigne neutre, 2 essais | **Échec 2/2** : pièce dans `C.fenetre` (masque la grille) ; échec d'écriture sans trace durable | **2/2** : pièce dans la colonne de droite (« Ouvrir dans un onglet », « Fermer le document ») ; échec affiché sous le critère jusqu'au succès suivant |
+| S11. Nettoyer et harmoniser sept feuilles CSS | **Déjà conforme** (mesuré sur la 0.2.0) : relevé des styles calculés avant/après, un sens par couleur | Outil fourni au kit (`outils/styles/`), sans consigne nouvelle |
+
+Une première version de S10 posait les questions (double clic, échec d'enregistrement) et soufflait les
+réponses : elle passait. La version neutre ne les pose pas. Les premières mesures avaient été faites par
+erreur sur un clone resté en 0.2.0 ; S10 a été rejoué sur la 0.5.0 (même échec) avant d'écrire la 0.6.0.
+
+**Kit** : `core.toast(…, 'erreur')` reste affiché jusqu'à fermeture ; `outils/styles/releve.js` vérifié sur le
+module DITND (deux relevés successifs : 0 différence sur 4 496 éléments, après stabilisation de la largeur
+avec `scrollbar-gutter`).
+
 ## Version 0.5.0 (01/10/2026) : revue design d'un projet client
 
 Portage générique des constats vérifiés d'une revue design (rien de propre au client : noms, adresses,

@@ -140,7 +140,13 @@
     t.className = 'toast' + (type ? ' ' + type : '');
     t.textContent = msg;
     z.appendChild(t);
-    setTimeout(() => t.remove(), type === 'erreur' ? 7000 : 3500);
+    if (type !== 'erreur') { setTimeout(() => t.remove(), 3500); return; }
+    // Erreur : reste affichée jusqu'à ce qu'on la ferme (une erreur manquée = une saisie crue enregistrée)
+    t.setAttribute('role', 'alert');
+    const b = document.createElement('button');
+    b.type = 'button'; b.className = 'toast-fermer'; b.textContent = 'Fermer';
+    b.addEventListener('click', () => t.remove());
+    t.append(' ', b);
   }
   /** RGAA 13.2 : tout lien qui ouvre une nouvelle fenêtre l'annonce (texte lu et pictogramme visible). */
   function signalerNouvellesFenetres(el) {

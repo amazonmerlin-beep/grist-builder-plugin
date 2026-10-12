@@ -77,6 +77,8 @@ Vérifier et, s'il en manque, le dire au consultant.
 | « Je télécharge les pièces une par une » (getgrist.com) | Quota de 3 000 appels par mois : `.grist` + `attachments/archive` (`reprise.md`) |
 | « Je lance les tests sur le document ouvert » | Document d'essais séparé ; jamais sur une instance distante |
 | « Les captures sont faites, c'est bon » | Les regarder toutes : cohérence, couleurs, colonnes, libellés |
+| « La pièce s'ouvre dans une fenêtre, c'est standard » | On note en lisant : la pièce à côté de la saisie, dans la page (`widget.md`) |
+| « L'erreur est signalée par un message » | Un échec d'écriture reste affiché près de la saisie jusqu'au succès suivant |
 | « Je règle les questions du formulaire sur ses champs » | Sur la colonne ; sinon l'éditeur affiche « Aucun choix configuré » (`donnees.md`, `corriger-formulaire.js`) |
 | « Je construis l'essai sur l'instance du client avec le nom habituel » | `construire.js` supprime d'abord tout document de même nom : nom, `--adresse` et `DOC_COURANT` à part |
 | « J'envoie l'adresse de l'espace d'équipe » | Accueil refusé aux invités : toujours le lien direct du document |

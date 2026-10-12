@@ -113,7 +113,8 @@ appartenance, statut, doublons, références, formules, pièces, partage nominat
 2. Ajouter au kit, si les projets le demandent : outil des comptes en masse, jeu de démonstration (voir LAPI).
 3. Rejouer sur une copie fraîche du kit les contrôles Chrome de la 0.5.0 (parcours, axe-core, zoom, `npm run captures`), non lancés faute de mémoire ; et les tests de droits (`npm run test:acces`, avec `schema/formulaire.js` copié de l'exemple pour les deux cas du formulaire), `npm run regles -- --simulation` puis sans, sur ce document.
 4. Essayer la section « Contribuer au plugin » sur un vrai projet (première issue proposée par le skill).
-5. **Reporter dans le kit et les références les leçons de la revue d'interface DITND (12/10/2026)**, faite avec
+5. ~~Reporter dans le kit les leçons de la revue d'interface DITND~~ : **fait en 0.6.0** (pièce lue à côté de la saisie, échec d'écriture visible, erreurs persistantes, outil de relevé des styles ; les autres leçons passaient déjà sans consigne, `docs/tests/verification.md`). Liste d'origine,
+   **leçons de la revue d'interface DITND (12/10/2026)**, faite avec
    impeccable sur `007 - DITND/grist-migration` (dépôt git local, commits `c26db68` à `ac11fca`, critique
    25/40 dans `document-cible/.impeccable/critique/`) :
    - acte lourd (décision, refus) : préparer, vérifier, récapitulatif, puis une seule écriture ; jamais au clic

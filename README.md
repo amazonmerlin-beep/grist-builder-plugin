@@ -50,6 +50,15 @@ propose lui-même, une fois et avec votre accord, d'en ouvrir une après un déf
 réutilisable (section « Contribuer au plugin » de `SKILL.md`). Contenu généralisé : jamais de données, noms,
 adresses ou identifiants d'un client. Licence MIT.
 
+## Nouveautés 0.6.0 (revue d'interface de la DITND avec impeccable, 12/10/2026)
+
+- **Saisir en lisant une pièce** : la pièce s'affiche dans la page, à côté de la grille, et non dans une
+  fenêtre qui masque la saisie (`references/widget.md`).
+- **Échec d'écriture visible** : il reste affiché près de la saisie jusqu'au succès suivant ; les messages
+  d'erreur du module ne disparaissent plus seuls (bouton « Fermer »).
+- **Nettoyer le CSS sans régression** : `outils/styles/releve.js` et `comparer.js` comparent les styles
+  calculés de chaque élément, onglet par onglet et rôle par rôle, avant et après (`references/livraison.md`).
+
 ## Nouveautés 0.5.0 (revue design d'un projet client, 01/10/2026)
 
 - **Écran à jour après un choix** : une case, un bouton radio, une liste ou un champ fichier redessine l'écran
