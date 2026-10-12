@@ -79,6 +79,9 @@ Vérifier et, s'il en manque, le dire au consultant.
 | « Les captures sont faites, c'est bon » | Les regarder toutes : cohérence, couleurs, colonnes, libellés |
 | « La pièce s'ouvre dans une fenêtre, c'est standard » | On note en lisant : la pièce à côté de la saisie, dans la page (`widget.md`) |
 | « L'erreur est signalée par un message » | Un échec d'écriture reste affiché près de la saisie jusqu'au succès suivant |
+| « Le choix de la décision s'enregistre au clic, c'est fluide » | Acte lourd : choix gardé, vérification, récapitulatif, une écriture ; rôle confirmé (`widget.md`) |
+| « Le tableau de bord montre tous les compteurs » | Une prochaine action en tête, des accès rapides, puis les compteurs ; séance projetée : à discuter d'abord, décision fixe à côté |
+| « next=adresse du document après la connexion » | Un chemin relatif ; l'adresse complète casse le retour sur certaines instances (`widget.md`) |
 | « Je règle les questions du formulaire sur ses champs » | Sur la colonne ; sinon l'éditeur affiche « Aucun choix configuré » (`donnees.md`, `corriger-formulaire.js`) |
 | « Je construis l'essai sur l'instance du client avec le nom habituel » | `construire.js` supprime d'abord tout document de même nom : nom, `--adresse` et `DOC_COURANT` à part |
 | « J'envoie l'adresse de l'espace d'équipe » | Accueil refusé aux invités : toujours le lien direct du document |

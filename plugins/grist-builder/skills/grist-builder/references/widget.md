@@ -212,6 +212,33 @@ blob dans un `<iframe>` ou une `<img>`), la liste latérale se replie, les atten
 du document ouvert (identifiant, adresse blob) se garde dans la vue, pour qu'un redessin le rouvre ;
 `URL.revokeObjectURL` à la fermeture.
 
+## Écrans de décision et de pilotage
+
+- **Acte lourd** (décision d'une commission, refus, changement de rôle) : jamais écrit au `change` d'un bouton
+  radio ou d'un `<select>`. Le choix est gardé dans l'état de la vue (il survit aux redessins), un bouton
+  « Enregistrer la décision » vérifie (motivation exigée pour un refus ou une suspension), montre un
+  récapitulatif (`C.fenetre` : dossier, décision, motivation, statut qui en résulte, décision remplacée), puis
+  écrit en une fois. Un rôle : confirmer à chaque changement, revenir à l'ancienne valeur si l'on annule (les
+  flèches sur un `<select>` fermé le modifient sans qu'on le déplie).
+- **Accueil d'un rôle** : en tête, la **prochaine action** (une seule, en bouton plein, choisie par urgence : séance
+  en cours, demandes d'accès, dossiers à contrôler, commission à ouvrir…), les suivantes repliées ; un repère de
+  parcours (frise des étapes, avec le nombre en attente à chaque étape) ; des **accès rapides** aux écrans les
+  plus utilisés (synthèse de la dernière commission, évaluations à faire) ; les compteurs par statut en dessous.
+  Un seul bouton plein par écran.
+- **Réunion projetée** (séance de commission) : écran fait pour la salle. En tête, ce qui demande discussion
+  (recommandations différentes, rédhibitoires, désaccords, groupés par motif, avec le niveau et le commentaire
+  de chaque membre) ; juste après, la **carte complète des critères, ouverte** (critère × membre : c'est la
+  partie que la commission lit le plus ; ne jamais la replier) ; la décision **fixe à côté** (colonne de droite
+  collante), jamais en bas après 29 lignes ;
+  « ← Précédent · Dossier 3 sur 12 · Suivant → » dans l'ordre de la commission ; un mode **Projeter** (plein
+  écran si le cadre l'autorise, texte agrandi, sans onglets ni actions d'administration, Échap pour sortir).
+- **Connexion depuis le widget** (bouton « Se connecter » de l'écran « compte non reconnu ») : lien `target="_top"`
+  vers `<origine>/login?next=<chemin>`, où `next` est un **chemin relatif** (`/o/<org>/doc/<urlId>`), jamais
+  l'adresse complète : l'instance de la DINUM la colle derrière son domaine
+  (`https://grist.numerique.gouv.fr/https://…`, page introuvable). Adresse du document : celle du document
+  ouvert (jeton du widget), le paramètre seulement en secours ; un paramètre copié d'un autre document renvoie
+  ailleurs après la connexion.
+
 ## Pièces jointes
 
 **Méthode** (`core.lirePiece`) :

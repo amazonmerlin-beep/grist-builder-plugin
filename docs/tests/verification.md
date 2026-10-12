@@ -35,6 +35,22 @@ la 0.2.0 (après).
 - 0 violation d'accessibilité ;
 - `.grist` livré avec le chargeur public.
 
+## Version 0.7.0 (12/10/2026) : séance et parcours de la DITND
+
+Leçons de la phase « séance et parcours » de la DITND (critique impeccable 26/40, retours de l'utilisateur sur le
+document d'essai). Sous-agents Sonnet, consignes neutres, avec la 0.6.0 (avant) puis la 0.7.0 (après).
+
+| Scénario | 0.6.0 (avant) | 0.7.0 (après) |
+|---|---|---|
+| S12. Bouton « Se connecter » (ProConnect) | **Échec** : `next` = adresse complète (retour cassé sur l'instance de la DINUM) | Chemin relatif tiré du jeton du document ouvert, `target="_top"` |
+| S13. Accueil de l'administration | **Échec partiel** : compteurs par groupe, mais ni prochaine action unique ni accès rapides, un bouton plein par commission | Une prochaine action (urgence), les suivantes repliées, accès rapides, frise, compteurs ensuite |
+| S14. Synthèse pour une séance projetée | **Échec partiel** : précédent / suivant, mais décision en bas, écrite au clic, sans mode projection | À discuter en tête, décision fixe à côté, récapitulatif, Projeter (plein écran, Échap) ; carte des critères ouverte (seconde passe) |
+| S15. Annuaire modifiable | **Échec** : rôle écrit au changement, sans confirmation | Rôle confirmé, retour à l'ancienne valeur si l'on annule |
+| S16. Décision selon l'étape de la commission | **Échec partiel** : clôture figée (déjà conforme), mais décision écrite au clic | Rien au clic, vérification, récapitulatif, une écriture ; clôture figée |
+
+S9 (0.6.0) passait sur un seul essai ; S14 et S16 montrent que l'acte lourd n'était pas acquis : il est écrit.
+L'étape finale figée passait déjà sans consigne (S16) : non écrite.
+
 ## Version 0.6.0 (12/10/2026) : revue d'interface de la DITND avec impeccable
 
 Leçons d'une revue d'interface du module DITND (deux critiques impeccable, 25/40 puis 27/40). Sous-agents

@@ -108,6 +108,17 @@ statut borné, principes en tête), `schema/acces.test.js` (6 contrôles sans Gr
 appartenance, statut, doublons, références, formules, pièces, partage nominatif revu, limites de « public,
 éditeur », vérifié sain, méthode), donnees, livraison, arbitrages ; SKILL.md : 5 signaux d'alerte.
 
+## Version 0.6.0 (12/10/2026)
+Revue d'interface de la DITND avec impeccable (critiques 25/40 puis 27/40). `widget.md` : saisir en lisant une pièce
+(la pièce dans la page), échec d'écriture visible ; messages d'erreur persistants (`core.js`) ; outil de relevé des
+styles (`outils/styles/`). Vérification S9 à S11. Construite d'abord par erreur sur un clone resté en 0.2.0 :
+toujours `git fetch` avant de travailler.
+
+## Version 0.7.0 (12/10/2026)
+Phase « séance et parcours » de la DITND : `widget.md` (écrans de décision et de pilotage : acte lourd, accueil d'un
+rôle, réunion projetée ; connexion depuis le widget, `next` relatif), signaux d'alerte de `SKILL.md`. Vérification
+S12 à S16 (`docs/tests/verification.md`).
+
 ## e) Prochaines actions
 1. Faire installer le plugin par un collègue (README) et recueillir ses retours.
 2. Ajouter au kit, si les projets le demandent : outil des comptes en masse, jeu de démonstration (voir LAPI).
@@ -129,7 +140,8 @@ appartenance, statut, doublons, références, formules, pièces, partage nominat
    - `g.lignes()` renvoie les listes encodées `['L', …]` : le décodage est à faire côté outils aussi
      (bogue trouvé dans `jeu-demo.js` de la DITND) ;
    - DESIGN.md + PRODUCT.md par projet : la phase de cadrage peut produire le PRODUCT.md (proposition n° 2).
-6. **Candidats au kit, phase séance et parcours de la DITND (12/10/2026, commits `b87b4e2` à `2a219e9`)**, à tester
+6. ~~Candidats au kit, phase séance et parcours~~ : **fait en 0.7.0** (acte lourd, accueil d'un rôle, réunion projetée, connexion ;
+   l'étape finale figée passait déjà). Liste d'origine, **phase séance et parcours de la DITND (12/10/2026)**, à tester
    (avant / après) comme en 0.6.0 avant d'écrire quoi que ce soit :
    - repère de parcours par rôle (frise, `commun.frise()`) et « une seule action principale » par écran ;
    - « Prochaine action » de l'administration, calculée par urgence ;

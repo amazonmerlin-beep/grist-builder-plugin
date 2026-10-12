@@ -50,6 +50,15 @@ propose lui-même, une fois et avec votre accord, d'en ouvrir une après un déf
 réutilisable (section « Contribuer au plugin » de `SKILL.md`). Contenu généralisé : jamais de données, noms,
 adresses ou identifiants d'un client. Licence MIT.
 
+## Nouveautés 0.7.0 (séance et parcours de la DITND, 12/10/2026)
+
+- **Écrans de décision et de pilotage** (`references/widget.md`) :
+  - acte lourd (décision, refus, rôle) : choix gardé, vérification, récapitulatif, une seule écriture ; rôle confirmé ;
+  - accueil d'un rôle : une prochaine action, des accès rapides, puis les compteurs ;
+  - réunion projetée : à discuter d'abord, carte des critères ouverte, décision fixe à côté, mode « Projeter ».
+- **Connexion depuis le widget** : `next` en chemin relatif, adresse du document ouvert (l'instance de la DINUM
+  cassait le retour avec une adresse complète).
+
 ## Nouveautés 0.6.0 (revue d'interface de la DITND avec impeccable, 12/10/2026)
 
 - **Saisir en lisant une pièce** : la pièce s'affiche dans la page, à côté de la grille, et non dans une
