@@ -14,6 +14,26 @@ Construction (`outils/construire.js`, quelques secondes) : passe 1 tables et col
 de base, guides ; passe 2 formules ; passe 3 déclencheurs, descriptions, libellés découplés ; page du
 widget ; règles ; partage. Le document est **jetable** : on le reconstruit plutôt que de le réparer.
 
+## Ordre de saisie : rien ne s'appuie sur plus loin
+
+Une question ne s'appuie jamais sur une information demandée plus loin dans le formulaire : condition
+d'affichage, liste de choix tirée d'une autre table, rattachement à une entité (système, site, lot) déclarée
+dans une partie suivante, contrôle de cohérence avec une réponse à venir. Sinon, la personne qui suit l'ordre
+répond sans pouvoir répondre juste, puis doit revenir corriger. Constat LAPI : les lecteurs se rattachaient en
+partie 2 à des systèmes déclarés en partie 4.
+- **Au cadrage et à chaque ajout** : pour chaque question, noter ce qu'elle utilise et vérifier que c'est
+  demandé avant elle (`cadrage.md`).
+- **Correction** : déclarer l'entité là où elle sert pour la première fois, par une **vraie question** :
+  numérotée, obligatoire, comptée au récapitulatif, saisie sur place (pas de fenêtre pour nommer). La suite se
+  range selon cette réponse (grille groupée par entité, bouton d'ajout dans chaque groupe) ; les parties
+  suivantes décrivent ce qui a été déclaré, sans proposer de le redéclarer. Un encart ajouté à côté de la
+  question ne corrige rien.
+- Une réponse et les entités qu'elle commande restent cohérentes (« plusieurs » si et seulement si au moins
+  deux) : chaque action qui change l'une met l'autre à jour ; un retour en arrière se confirme, en disant ce
+  qu'il retire. Les données d'essai respectent la même règle.
+- Si la correction change l'ordre ou la numérotation de questions validées par le client : **remonter au
+  cadrage**. Un ajout rattaché à un numéro existant (« Ajout à valider ») ne renumérote rien.
+
 ## Pièges de l'API (vérifiés)
 
 - `AddTable` ignore `description` et `untieColIdFromLabel` : les poser ensuite par `ModifyColumn`.

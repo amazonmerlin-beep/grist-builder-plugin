@@ -170,3 +170,17 @@ Défaut trouvé pendant la vérification et corrigé : avec `--adresse`, les tes
 correction : la classe `fenetre-large` de `core.fenetre()` n'avait pas de style (`.fenetre.large` seulement).
 
 `claude plugin validate .` : validation réussie, sans avertissement.
+
+## Version 0.8.0 (13/10/2026) : retours de la mission LAPI
+
+Kit copié à neuf (`essai/v08`, Grist local sur le port 8486, la DITND occupant le 8485), test d'abord :
+
+| Contrôle | 0.7.0 (avant) | 0.8.0 (après) |
+|---|---|---|
+| Parcours « précédent et suivant » (nouveau test) | **Échec** : avec une fenêtre ouverte, « précédent » la fermait **et** changeait d'écran (`suivi {}` au lieu de `aide {}`) | Réussi : fenêtre fermée sans changer d'écran, « suivant » rejoue le pas défait, écran de départ rendu à sa place (défilement 1 500 px), adresse de Grist inchangée |
+| Tests unitaires | | 20 / 20 |
+| Tests de droits | | 7 / 7 |
+| Parcours Chrome | | 6 / 6 |
+
+Même motif d'abord écrit et éprouvé dans le module LAPI (18 parcours, dont deux sur l'historique, et 16 tests de
+droits verts dans Chrome par défaut, avec le chargeur local).

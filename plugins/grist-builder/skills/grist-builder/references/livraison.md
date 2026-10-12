@@ -29,8 +29,24 @@
   points qu'un outil automatique ne voit pas (lecteur d'écran, clavier seul).
 - **Lire les résultats** : Node 24 n'écrit plus en TAP (`ok` / `not ok`) mais avec `✔` / `✖` et un bilan
   `ℹ tests`, `ℹ pass`, `ℹ fail` : filtrer sur ces lignes, pas sur `^ok`.
-- **Bouton « retour »** : le tester avec `page.evaluate(() => history.back())` ; le `goBack()` de Playwright
-  attend un chargement qui n'arrive pas (le module change d'écran sans charger de page).
+- **Précédent et suivant du navigateur** (obligatoires, `widget.md`) : un parcours dédié, avec
+  `page.evaluate(() => history.back())` et `history.forward()` ; le `goBack()` de Playwright attend un
+  chargement qui n'arrive pas (le module change d'écran sans charger de page).
+- **Attendre le module prêt** (`etat.vue` posé, comme `trouverModule` du kit), jamais l'absence d'un texte de
+  chargement : le HTML du widget s'affiche avant son code, et le texte de chargement n'apparaît qu'après.
+
+## Mettre à niveau un projet commencé avec une version antérieure du kit
+
+Un projet ne reçoit pas tout seul les nouveautés du kit : à chaque nouvelle version, et avant une revue ou une
+livraison, reprendre cette liste. Constat LAPI (projet commencé avant le kit) : pas d'historique, chargeur public
+en local, tests lancés avec des options de Chrome, et une table d'indicateurs lisible par tous.
+- Précédent et suivant du navigateur, avec leur test (`widget.md`).
+- Chargeur du widget servi par le Grist local (`grist-local/chargeur`, `construire.js --chargeur`) et tests dans
+  Chrome par défaut : sinon pièces jointes et captures des guides sont illisibles en local, sans qu'un test le voie.
+  Le fichier livré garde le chargeur public (`livrer.js`).
+- Tests qui attendent le module prêt (ci-dessus).
+- Relecture des droits, table par table et rôle par rôle, tables calculées comprises (`permissions.md`).
+- Ordre de saisie : aucune question ne s'appuie sur une réponse demandée plus loin (`donnees.md`).
 
 ## Revue design (avant une recette ou une livraison)
 
@@ -44,7 +60,8 @@ champs illisibles au zoom). Méthode :
    connexion, liste vide, lecture seule) n'est pas revu du tout.
 2. **Une zone par agent** (accueil et listes, fiches, parcours d'un rôle, socle : en-tête, champs, aide) : chacun
    lit ses captures et le code, et rend des constats `[gravité/effort] écran — constat — correctif proposé`
-   (fichier, ligne, code), RGAA cité quand il s'applique.
+   (fichier, ligne, code), RGAA cité quand il s'applique. Deux contrôles de parcours à chaque revue : l'ordre de
+   saisie (rien ne s'appuie sur plus loin, `donnees.md`) et précédent / suivant du navigateur.
 3. **Un vérificateur adverse** relit chaque constat contre le code et contre **les décisions du client**
    (arbitrages notés, guides validés) : il confirme, corrige (le constat était faux sur un point, le correctif
    casserait autre chose), ou **écarte** ce qui contredit une décision (« pas de fil d'Ariane », « pas de

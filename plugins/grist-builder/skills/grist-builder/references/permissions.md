@@ -65,6 +65,12 @@ annuaire confidentiel, pas de partage nominatif ; avec des invitations, le dire 
 - Les **propriétaires** passent outre toutes les règles : deux ou trois au plus.
 - Les pièces jointes suivent les règles de la cellule qui les référence : une capture d'un guide réservé
   n'est pas téléchargeable par les autres.
+- **Table calculée (indicateurs, synthèse, positionnement)** : ses formules lisent les autres tables
+  **par-dessus leurs règles** ; la lire, c'est lire leurs valeurs (liste triée, effectifs), quel que soit le
+  périmètre du lecteur. Ne jamais la ranger avec les référentiels « lisibles par tout compte reconnu » : lignes
+  publiées seulement (`rec.Publie`), colonnes de détail fermées (liste des valeurs) et un test par rôle qui le
+  prouve, publication comprise. Constat LAPI : une table d'indicateurs donnait à chaque département les valeurs
+  de tous les autres, avant la clôture et sous le seuil de publication, alors que le module, lui, attendait.
 - Un lecteur extérieur (partenaire, administration) : règles par ligne (réponses transmises, publication
   nominative) **et** par colonne (pas de données personnelles, pas de coordonnées exactes).
 - **Ne jamais écrire dans l'annuaire depuis le module pour une action courante** (CGU, préférences) : chaque
@@ -145,7 +151,8 @@ les règles ; une connexion à l'adresse d'un autre est refusée.
 - Pistes à essayer à chaque fois : création avec des valeurs de traitement (statut, auteur, nom, date) ; statut
   hors liste ; écriture après retrait (désactivé, conflit, membre décoché) ; référence inexistante ou inactive ;
   doublon par l'administration ; dépôt anonyme dans les colonnes réservées ; colonnes calculées qui recopient
-  une donnée masquée ; pièces jointes par rôle ; partage et `/access` ; points d'accès de la liste « vérifié
+  une donnée masquée ; **chaque table lue par un compte de chaque rôle**, à la recherche de données d'un autre
+  périmètre (tables calculées d'abord) ; pièces jointes par rôle ; partage et `/access` ; points d'accès de la liste « vérifié
   sain ».
 - Les **garde-fous d'écran** (masquer les avis des autres avant transmission, onglet caché) se documentent
   comme tels dans les arbitrages : ils ne protègent rien contre l'API.

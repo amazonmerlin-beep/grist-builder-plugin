@@ -111,22 +111,32 @@ test('sans recharger : réponse transmise signalée au pilotage (pastille) ; com
   }
 });
 
-test('retour du navigateur : revient à l’écran précédent du module, ferme d’abord une fenêtre, sans quitter Grist', async () => {
+test('précédent et suivant du navigateur : écran précédent à sa place, fenêtre fermée sans changer d’écran, sans quitter Grist', async () => {
   const [email, nom] = config.comptesTest.find(x => x[2] === 'admin');
   const { page, module: m } = await ouvrir(await nav.nouveau(), email, nom);
   const ecran = () => m.evaluate(() => Formulaire.core.etat.vue + ' ' + JSON.stringify(Formulaire.core.etat.arg));
+  // Le goBack() de Playwright attend un chargement qui n'arrive pas : history.back() dans la page
+  const precedent = async () => { await page.evaluate(() => history.back()); await attendre(800); };
   const url0 = page.url();
   const depart = await ecran();
+  // Écran de départ défilé : « précédent » doit le rendre à cette place
+  await m.evaluate(() => { document.body.style.minHeight = '4000px'; window.scrollTo(0, 1500); });
   await cliquer(m, '[data-vue="aide"]'); await attendre(400);
   await cliquer(m, '.aide-liste [data-action="guide"]:not([aria-current])'); await attendre(400);
   const guide = await ecran();
   assert.match(guide, /^aide \{"guide":/);
-  // Le goBack() de Playwright attend un chargement qui n'arrive pas : history.back() dans la page
-  await page.evaluate(() => history.back()); await attendre(800);
+  await precedent();
   assert.equal(await ecran(), 'aide {}');
+  await page.evaluate(() => history.forward()); await attendre(800);
+  assert.equal(await ecran(), guide, '« suivant » rejoue le pas défait');
+  await precedent();
+  // Fenêtre ouverte : « précédent » la ferme et reste sur l'écran
   await m.evaluate(() => { Formulaire.core.fenetre('Essai', '<p>Fenêtre ouverte</p>'); });
-  await page.evaluate(() => history.back()); await attendre(800);
-  assert.equal(await m.evaluate(() => !!document.querySelector('.voile')), false, 'fenêtre fermée par « retour »');
+  await precedent();
+  assert.equal(await m.evaluate(() => !!document.querySelector('.voile')), false, 'fenêtre fermée par « précédent »');
+  assert.equal(await ecran(), 'aide {}', 'fenêtre fermée sans changer d’écran');
+  await precedent();
   assert.equal(await ecran(), depart);
+  assert.ok(Math.abs(await m.evaluate(() => window.scrollY) - 1500) < 5, 'écran de départ rendu à sa place');
   assert.equal(page.url(), url0, 'la page Grist ne change pas');
 });

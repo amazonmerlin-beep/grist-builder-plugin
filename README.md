@@ -50,6 +50,18 @@ propose lui-même, une fois et avec votre accord, d'en ouvrir une après un déf
 réutilisable (section « Contribuer au plugin » de `SKILL.md`). Contenu généralisé : jamais de données, noms,
 adresses ou identifiants d'un client. Licence MIT.
 
+## Nouveautés 0.8.0 (retours de la mission LAPI, 13/10/2026)
+
+- **Précédent et suivant du navigateur, dans tout module** (`references/widget.md`, kit) : écran rendu tel qu'on
+  l'a laissé (arguments et défilement notés en le quittant), fenêtre ouverte fermée sans changer d'écran ; test
+  du kit étendu (suivant, place, fenêtre).
+- **Ordre de saisie** (`references/donnees.md`, `cadrage.md`) : aucune question ne s'appuie sur une réponse
+  demandée plus loin ; correction par une vraie question à sa place, ou remontée au cadrage.
+- **Tables calculées** (`references/permissions.md`) : jamais lisibles comme un référentiel ; lignes publiées,
+  colonnes de détail fermées, test par rôle.
+- **Mise à niveau d'un projet antérieur au kit** (`references/livraison.md`) : historique, chargeur local et
+  Chrome par défaut, attente du module prêt, droits table par table, ordre de saisie.
+
 ## Nouveautés 0.7.0 (séance et parcours de la DITND, 12/10/2026)
 
 - **Écrans de décision et de pilotage** (`references/widget.md`) :

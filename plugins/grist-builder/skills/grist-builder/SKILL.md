@@ -36,8 +36,8 @@ Lire la référence **au moment où la phase commence**, pas avant.
 ## Le kit (phase 4)
 
 Socle testé : Grist local et chargeur local du widget, construction du document d'après un schéma (formulaire
-public compris), identité et règles d'accès, squelette du module (veille, pastilles d'onglets, bouton retour du
-navigateur), déploiement, tests (droits, parcours, accessibilité, zoom), partage, guides (notice de
+public compris), identité et règles d'accès, squelette du module (veille, pastilles d'onglets, boutons
+précédent et suivant du navigateur), déploiement, tests (droits, parcours, accessibilité, zoom), partage, guides (notice de
 confidentialité comprise), jeu d'essai, livraison. Il ne contient pas d'écrans métier : ils s'écrivent par projet (`kit/module/src/vue-exemple.js`
 montre le motif).
 
@@ -88,7 +88,7 @@ Vérifier et, s'il en manque, le dire au consultant.
 | « Le document est dans l'espace de l'équipe, personne d'autre ne le voit » | Il hérite des droits de l'espace : tous les membres l'ouvrent (écran d'accès s'ils sont hors annuaire) |
 | « Les tests passent : pas de `not ok` » | Node 24 n'écrit plus en TAP : lire `ℹ pass` / `ℹ fail` |
 | « `page.goBack()` teste le bouton retour » | Il attend un chargement qui n'arrive pas : `history.back()` dans la page |
-| « Le retour du navigateur n'a pas à marcher dans un widget » | Historique poussé sur le cadre du chargeur, fenêtre fermée d'abord (`widget.md`) |
+| « Le retour du navigateur n'a pas à marcher dans un widget » | Précédent et suivant dans **tout** module, kit ou non : écran rendu à sa place, fenêtre fermée sans changer d'écran, test dédié (`widget.md`) |
 | « Il suffit de recharger pour voir le nouveau » | Veille ciblée par rôle, pastilles d'onglets, compte accepté sans recharger (`widget.md`) |
 | « axe-core ne signale rien : c'est accessible » | Aussi : zoom à 200 % (`test:zoom`), liens « nouvelle fenêtre », `th scope`, clavier, lecteur d'écran |
 | « J'ajoute les champs habituels du métier (n° de déclaration, tarif, téléphone) » | Chaque question : un usage dans l'outil et une source ; partir du formulaire validé, questions fermées au client (`donnees.md`) |
@@ -106,6 +106,10 @@ Vérifier et, s'il en manque, le dire au consultant.
 | « Je partage nominativement pour que chacun trouve le document » | Chaque compte partagé lit les adresses de tous les autres (`/access`) : avec le lien, pas de partage nominatif |
 | « J'ai relu les règles, elles sont bonnes » | Chaque faille se prouve par l'API, un client par compte de test, document d'essais, puis un test par correctif (`permissions.md`) |
 | « La revue design se fait en lisant le code » | Captures de tous les écrans et états sur un document de test d'abord (`npm run captures`), une zone par agent, vérificateur adverse contre les décisions du client (`livraison.md`) |
+| « Cette question peut s'appuyer sur une réponse demandée plus loin » | Jamais : ce qu'une question utilise (réponse, liste, entité) est demandé avant elle ; sinon déplacer la déclaration, ou remonter au cadrage si l'ordre validé change (`donnees.md`) |
+| « Un encart à côté de la question suffit à corriger le parcours » | Une vraie question à sa place : numérotée, obligatoire, au récapitulatif, saisie sur place ; la suite rangée selon la réponse (`donnees.md`) |
+| « Table d'indicateurs : lisible par tous, comme un référentiel » | Ses formules lisent les autres tables par-dessus leurs règles : lignes publiées seulement, colonnes de détail fermées, test par rôle (`permissions.md`) |
+| « Projet commencé avec une version antérieure du kit : il a les nouveautés » | Non : liste de mise à niveau à reprendre à chaque version (`livraison.md`) |
 
 ## Contribuer au plugin
 

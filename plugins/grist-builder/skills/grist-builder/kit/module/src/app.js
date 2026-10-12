@@ -126,19 +126,44 @@
   }
 
   // Changement d'écran : focus sur le titre du nouvel écran (annoncé par les lecteurs d'écran).
-  // Chaque changement d'écran entre dans l'historique : le bouton ou le geste « retour » du navigateur revient
-  // à l'écran précédent du module, et ne sort de Grist qu'une fois revenu au premier.
+  // Chaque changement d'écran entre dans l'historique : les boutons « précédent » et « suivant » du navigateur
+  // (et le geste retour) parcourent les écrans du module, chacun rendu tel qu'on l'a laissé (filtres, tri,
+  // défilement) ; « précédent » ne sort de Grist qu'une fois revenu au premier écran.
   // L'historique est celui du cadre du chargeur (parent, même origine) : le chargeur écrit le module dans un
   // cadre intérieur par document.write, et Chrome recharge ce cadre au retour au lieu d'y revenir.
   const fenHist = (() => { try { return window.parent !== window && window.parent.history && window.parent.location.href ? window.parent : window; } catch (err) { return window; } })();
+  // Rang de l'entrée courante (n), et état de chaque entrée noté en la quittant : arguments de l'écran,
+  // y compris ceux changés sur place, et défilement
+  let rangHist = 0;
+  const pages = [];
+  const entree = () => ({ module: true, n: rangHist, vue: C.etat.vue, arg: C.etat.arg });
+  const noterPage = () => { pages[rangHist] = { vue: C.etat.vue, arg: C.etat.arg, y: window.scrollY }; };
   // Filtre, recherche ou tri d'une liste : l'état de l'écran (etat.arg) est noté dans l'entrée d'historique
   // courante, sans en ajouter une ; un retour depuis une fiche retrouve la liste telle qu'on l'a laissée
   function memoriser() {
-    try { fenHist.history.replaceState({ module: true, vue: C.etat.vue, arg: C.etat.arg }, ''); } catch (err) { /* sans historique */ }
+    try { fenHist.history.replaceState(entree(), ''); } catch (err) { /* sans historique */ }
+  }
+  function surHistorique(ev) {
+    const st = ev.state;
+    if (!st || !st.module || typeof st.n !== 'number' || st.n === rangHist) return;   // retour annulé : ci-dessous
+    // Fenêtre ouverte : « précédent » la ferme (comme Échap) et reste sur l'écran ; le déplacement est annulé
+    if (document.querySelector('.voile')) {
+      document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' }));
+      try { fenHist.history.go(rangHist - st.n); } catch (err) { /* sans historique */ }
+      return;
+    }
+    noterPage();
+    rangHist = st.n;
+    const p = pages[st.n] || st;
+    aller(p.vue, p.arg || {}, { historique: false });
+    if (p.y) window.scrollTo(0, p.y);
   }
   function aller(vue, arg = {}, { historique = true } = {}) {
     if (historique && (vue !== C.etat.vue || JSON.stringify(arg) !== JSON.stringify(C.etat.arg || {}))) {
-      try { fenHist.history.pushState({ module: true, vue, arg }, ''); } catch (err) { /* sans historique : sans effet */ }
+      noterPage();
+      rangHist += 1;
+      pages.length = rangHist;
+      try { fenHist.history.pushState({ module: true, n: rangHist, vue, arg }, ''); } catch (err) { /* sans historique : sans effet */ }
     }
     C.etat.vue = vue; C.etat.arg = arg; rendre(); window.scrollTo(0, 0);
     const h = C.racine().querySelector('#contenu h2');
@@ -258,14 +283,8 @@
     C.etat.vue = C.etat.moi.connu ? vueParDefaut() : 'inconnu';
     C.etat.arg = {};
     // Historique : l'écran de départ, puis retour du navigateur (voir aller)
-    try { fenHist.history.replaceState({ module: true, vue: C.etat.vue, arg: {} }, ''); } catch (err) { /* idem */ }
-    fenHist.addEventListener('popstate', ev => {
-      const st = ev.state;
-      if (!st || !st.module) return;
-      // Fenêtre modale ouverte : « retour » la ferme (comme Échap) avant de changer d'écran
-      if (document.querySelector('.voile')) document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' }));
-      aller(st.vue, st.arg || {}, { historique: false });
-    });
+    memoriser();
+    fenHist.addEventListener('popstate', surHistorique);
     rendre();
     majPastilles(false);
     // L'en-tête cesse de coller en petite largeur ou petite hauteur (zoom) : la hauteur réservée suit

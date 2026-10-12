@@ -90,16 +90,26 @@ la relecture périodique (90 s). Pour ce qui doit apparaître vite, le kit a une
   onglets sans recharger la page (`identiteChangee` : tout relire d'abord, les règles ont changé), et un compte
   désactivé à l'écran d'accès.
 
-## Bouton « retour » du navigateur
+## Boutons « précédent » et « suivant » du navigateur (dans tout module)
 
-Chaque changement d'écran (`aller(vue, arg)`) pousse une entrée d'historique : le bouton ou le geste
-« retour » revient à l'écran précédent du module, ferme d'abord une fenêtre modale ouverte, et ne sort de Grist
+**Toujours**, module du kit ou non : sans historique, le premier « précédent » fait quitter Grist. Chaque
+changement d'écran (`aller(vue, arg)`) pousse une entrée d'historique numérotée (`n`) : « précédent » et
+« suivant » (boutons, geste, raccourcis) parcourent les écrans du module, et « précédent » ne sort de Grist
 qu'une fois revenu au premier écran. L'entrée est poussée sur **le cadre du chargeur** (`window.parent`, même
 origine ; repli sur `window`), avec `replaceState` au démarrage et l'écoute de `popstate` sur ce même cadre.
 Pourquoi pas le cadre du module : le chargeur y écrit le module par `document.write`, et Chrome, au retour,
-recharge ce cadre au lieu d'y revenir. `aller(vue, arg, { historique: false })` change d'écran sans entrée
-(retour lui-même, changement d'identité). Test : `history.back()` sur la page (le `goBack()` de Playwright
-attend un chargement qui n'arrive pas).
+recharge ce cadre au lieu d'y revenir.
+- **Écran rendu tel qu'on l'a laissé** : en quittant une entrée, le module note ses arguments, y compris ceux
+  changés sur place (filtre, onglet d'une fiche, élément choisi), et son défilement (`pages[n]`) ; « précédent »
+  et « suivant » les reprennent.
+- **Fenêtre ouverte** : « précédent » la ferme comme Échap et **reste sur l'écran** (le déplacement est annulé
+  par `history.go`) ; avec une garde de saisie, une saisie commencée reste dans la fenêtre.
+- `aller(vue, arg, { historique: false })` change d'écran sans entrée (le retour lui-même, changement d'identité).
+- **Test** (`tests-e2e/parcours.test.js`) : précédent, suivant, place retrouvée, fenêtre fermée sans changer
+  d'écran, adresse de Grist inchangée. `history.back()` et `history.forward()` sur la page : le `goBack()` de
+  Playwright attend un chargement qui n'arrive pas.
+- **Module écrit avant le kit 0.8 ou hors du kit** : reporter `fenHist`, `rangHist`, `pages`, `surHistorique`,
+  `memoriser` et `aller` de `kit/module/src/app.js`, puis le test.
 
 **Filtres, recherche et tri ne passent pas par `aller()`** : chaque choix pousserait une entrée d'historique
 (le retour défait les filtres un à un) et enverrait le focus au titre (au clavier, chaque flèche d'une liste
