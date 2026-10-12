@@ -1,0 +1,11 @@
+{
+  "detector": {
+    "ignoreRules": [],
+    "ignoreFiles": [
+      "**/outils/**",
+      "**/schema/**",
+      "**/tests-e2e/**"
+    ],
+    "ignoreValues": []
+  }
+}

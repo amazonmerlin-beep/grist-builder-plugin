@@ -113,7 +113,25 @@ appartenance, statut, doublons, références, formules, pièces, partage nominat
 2. Ajouter au kit, si les projets le demandent : outil des comptes en masse, jeu de démonstration (voir LAPI).
 3. Rejouer sur une copie fraîche du kit les contrôles Chrome de la 0.5.0 (parcours, axe-core, zoom, `npm run captures`), non lancés faute de mémoire ; et les tests de droits (`npm run test:acces`, avec `schema/formulaire.js` copié de l'exemple pour les deux cas du formulaire), `npm run regles -- --simulation` puis sans, sur ce document.
 4. Essayer la section « Contribuer au plugin » sur un vrai projet (première issue proposée par le skill).
+5. **Reporter dans le kit et les références les leçons de la revue d'interface DITND (12/10/2026)**, faite avec
+   impeccable sur `007 - DITND/grist-migration` (dépôt git local, commits `c26db68` à `ac11fca`, critique
+   25/40 dans `document-cible/.impeccable/critique/`) :
+   - acte lourd (décision, refus) : préparer, vérifier, récapitulatif, puis une seule écriture ; jamais au clic
+     d'un bouton radio (`widget.md`, motif dans `vue-exemple.js`) ;
+   - document lu à côté de la saisie, dans la page (colonne élargie), pas dans une fenêtre modale ;
+   - groupes de boutons : un seul arrêt de tabulation (tabindex mobile, flèches) ; raccourcis limités à la
+     zone qui a le focus et désactivables (WCAG 2.1.4) ; pas d'`aria-live` sur un grand bloc ; défilement doux
+     seulement sans `prefers-reduced-motion` (`widget.md`, accessibilité) ;
+   - une couleur de statut = un sens ; jetons de couleur dans une seule feuille de thème (`ui.css` du kit) ;
+   - outil de non-régression CSS à ajouter au kit : relevé des styles calculés écran par écran, avant/après
+     (`document-cible/outils/styles/releve.js` et `comparer.js` de la DITND ; 6 095 éléments comparés) ;
+   - `g.lignes()` renvoie les listes encodées `['L', …]` : le décodage est à faire côté outils aussi
+     (bogue trouvé dans `jeu-demo.js` de la DITND) ;
+   - DESIGN.md + PRODUCT.md par projet : la phase de cadrage peut produire le PRODUCT.md (proposition n° 2).
 
 ## Notes
 - Essais du kit dans `essai/` (ignoré par git), Grist local sur le port 8485 pour ne pas gêner LAPI.
 - Contexte limité : fichiers copiés de LAPI puis modifiés par petites éditions.
+- Impeccable (12/10/2026) : outil de travail du dépôt, **pas une dépendance du plugin**. `PRODUCT.md` (racine,
+  « sobre » confirmé), surface du module en mode Operate (`.impeccable/surfaces/`), hook du détecteur qui
+  ignore `**/outils/**`, `**/schema/**`, `**/tests-e2e/**` (`.impeccable/config.json`).
