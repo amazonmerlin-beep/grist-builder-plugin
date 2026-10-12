@@ -129,6 +129,14 @@ appartenance, statut, doublons, références, formules, pièces, partage nominat
    - `g.lignes()` renvoie les listes encodées `['L', …]` : le décodage est à faire côté outils aussi
      (bogue trouvé dans `jeu-demo.js` de la DITND) ;
    - DESIGN.md + PRODUCT.md par projet : la phase de cadrage peut produire le PRODUCT.md (proposition n° 2).
+6. **Candidats au kit, phase séance et parcours de la DITND (12/10/2026, commits `b87b4e2` à `2a219e9`)**, à tester
+   (avant / après) comme en 0.6.0 avant d'écrire quoi que ce soit :
+   - repère de parcours par rôle (frise, `commun.frise()`) et « une seule action principale » par écran ;
+   - « Prochaine action » de l'administration, calculée par urgence ;
+   - synthèse pour une réunion projetée : « À discuter » d'abord, décision fixe à droite, précédent / suivant,
+     mode « Projeter » (plein écran, texte agrandi, actions d'administration masquées) ;
+   - changement de rôle confirmé (les flèches modifient un `<select>` fermé) ; étape finale figée en lecture ;
+   - un test qui mesure un élément replié passe toujours : déplier avant de mesurer.
 
 ## Notes
 - Essais du kit dans `essai/` (ignoré par git), Grist local sur le port 8485 pour ne pas gêner LAPI.
