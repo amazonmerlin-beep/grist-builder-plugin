@@ -1,16 +1,24 @@
-/* Enquête LAPI v2 — styles du module.
-   Sobre et classique : polices système, gris, un bleu d'action, aucun ornement. */
+/* Styles du module (kit grist-builder), communs à tous les écrans ; les feuilles du projet se chargent après.
+   Sobre et classique : polices système, gris, un bleu d'action, aucun ornement. Formulaires et fiche à étapes :
+   section « formulaires » (composants : fiche.js ; règles : references/widget.md). */
 :root {
   --c-texte: #1E2124;
   --c-texte-2: #5B636B;
+  /* Texte tertiaire (dates, compteurs, titres de groupe de la navigation) : au moins 4,5:1 sur --c-fond,
+     --c-fond-alt et --c-action-clair */
+  --c-texte-3: #666E77;
   --c-fond: #FFFFFF;
   --c-fond-alt: #F2F4F5;
   --c-bordure: #D3D8DC;
+  /* Filet : séparateur fin entre groupes et sections (jamais un cadre autour d'une section) */
+  --c-filet: #E3E6E9;
   /* Bordure des champs : au moins 3:1 sur le blanc et sur --c-fond-alt (RGAA 3.3) ; --c-bordure reste aux cartes et séparateurs */
   --c-bordure-champ: #767E86;
   --c-primaire: #1F5FA8;
   --c-action: #1F5FA8;
   --c-action-survol: #174A85;
+  /* Fond teinté du lien actif d'une navigation en colonne */
+  --c-action-clair: #EAF1FA;
   --c-succes: #1E7A46;
   --c-alerte: #9A5200;
   --c-alerte-fond: #FFF4DB;
@@ -27,6 +35,8 @@ body { font: 15px/1.5 var(--police); color: var(--c-texte); }
 button, input, select, textarea { font: inherit; color: inherit; }
 a { color: var(--c-primaire); }
 :focus-visible { outline: 2px solid var(--c-focus); outline-offset: 2px; }
+/* Titres qui reçoivent le focus par programme (changement d'écran ou de section) : annoncés, sans contour */
+:is(h2, h3)[tabindex="-1"]:focus { outline: none; }
 .num { font-variant-numeric: tabular-nums; }
 .discret { color: var(--c-texte-2); }
 .petit { font-size: 13px; }
@@ -83,10 +93,11 @@ label.btn { position: relative; }
 label.btn:focus-within { outline: 2px solid var(--c-focus); outline-offset: 2px; }
 
 /* ------------------------------------------------ messages */
-.note { padding: 10px 14px; border-left: 3px solid var(--c-bordure); background: var(--c-fond-alt); margin: 12px 0; max-width: 74ch; }
-.note.alerte { border-color: var(--c-alerte); background: var(--c-alerte-fond); }
-.note.erreur { border-color: var(--c-erreur); background: var(--c-erreur-fond); }
-.note.succes { border-color: var(--c-succes); background: #EAF5EE; }
+/* Message : cadre fin et fond teinté (pas de barre de couleur épaisse) */
+.note { padding: 10px 14px; border: 1px solid var(--c-filet); border-radius: var(--rayon); background: var(--c-fond-alt); margin: 12px 0; max-width: 74ch; }
+.note.alerte { border-color: #E3B873; background: var(--c-alerte-fond); }
+.note.erreur { border-color: #EBA59E; background: var(--c-erreur-fond); }
+.note.succes { border-color: #A8D5B8; background: #EAF5EE; }
 .note ul { margin: 6px 0 0; padding-left: 20px; }
 .toasts { position: fixed; right: 16px; bottom: 16px; display: flex; flex-direction: column; gap: 8px; z-index: 50; }
 .toast { background: var(--c-texte); color: #fff; padding: 9px 14px; border-radius: var(--rayon); max-width: 360px; }
@@ -161,6 +172,126 @@ input[readonly], textarea[readonly], select[disabled], input[disabled] { backgro
 .enregistrement { font-size: 13px; color: var(--c-texte-2); min-height: 1.4em; }
 .nav-partie { display: flex; justify-content: space-between; gap: 12px; margin-top: 32px; padding-top: 16px; border-top: 1px solid var(--c-bordure); flex-wrap: wrap; }
 
+/* ------------------------------------------------ formulaires (fiche.js ; règles : references/widget.md) */
+/* Fiche à étapes : en-tête fin à hauteur fixe sous les onglets ; navigation de la fiche en colonne (les onglets du
+   module sont horizontaux et soulignés) ; une section à la fois, à largeur de lecture ; rail facultatif à droite ;
+   l'ensemble borné et centré. Sections sans cadre : des filets fins séparent groupes et pied. */
+.fiche { --h-tete: 64px; }
+html:has(.fiche-tete) { scroll-padding-top: calc(var(--h-entete, 0px) + var(--h-fiche, 0px) + 12px); }
+/* En-tête collé sous celui du module ; sa hauteur ne change pas au défilement */
+.fiche-tete { position: sticky; top: var(--h-entete, 0px); z-index: 20; height: var(--h-tete); display: flex; align-items: center; gap: 18px;
+  margin: -24px -20px 0; padding: 0 28px; background: var(--c-fond-alt); border-bottom: 1px solid var(--c-filet); }
+.fiche-retour { flex: none; display: inline-flex; align-items: center; gap: 6px; height: 34px; padding: 0 12px; border: 1px solid var(--c-bordure);
+  border-radius: var(--rayon); background: var(--c-fond); color: var(--c-texte); font-size: 14px; font-weight: 600; cursor: pointer; white-space: nowrap; }
+.fiche-retour:hover { border-color: var(--c-bordure-champ); }
+.fiche-titre { flex: 1; min-width: 0; }
+.fiche-titre h2 { font-size: 16px; line-height: 1.3; margin: 0; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.fiche-qui { margin: 0; font-size: 13px; color: var(--c-texte-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.fiche-statuts { flex: none; display: flex; gap: 6px; }
+.fiche-statuts .statut { display: inline-flex; align-items: center; height: 22px; padding: 0 9px; font-weight: 600; }
+.fiche-corps { display: grid; grid-template-columns: 232px minmax(0, 720px); justify-content: center; gap: 44px; max-width: 1400px; margin: 0 auto; }
+.fiche-corps:has(> .fiche-rail) { grid-template-columns: 232px minmax(0, 720px) minmax(0, 280px); }
+/* Navigation de la fiche : collée sous l'en-tête ; lien actif sur fond teinté ; information à droite */
+.fiche-nav { position: sticky; top: calc(var(--h-entete, 0px) + var(--h-tete)); align-self: start; padding: 22px 0 16px;
+  max-height: calc(100vh - var(--h-entete, 0px) - var(--h-tete)); overflow-y: auto; }
+.fiche-nav-titre { font-size: 12px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--c-texte-3); margin: 0 0 6px 10px; }
+.fiche-nav ol, .fiche-nav ul { list-style: none; margin: 0 0 20px; padding: 0; }
+.fiche-nav a { position: relative; display: grid; grid-template-columns: 22px minmax(0, 1fr) auto; align-items: center; gap: 10px;
+  padding: 8px 10px; border-radius: var(--rayon); color: var(--c-texte); text-decoration: none; font-size: 14.5px; line-height: 1.35; }
+.fiche-nav a:hover { background: var(--c-fond-alt); }
+.fiche-nav a[aria-current="page"] { background: var(--c-action-clair); color: var(--c-action); font-weight: 600; }
+.fiche-nav .info { font-size: 12.5px; color: var(--c-texte-3); font-weight: 400; white-space: nowrap; }
+.fiche-nav a[aria-current="page"] .info { color: var(--c-action); }
+.fiche-nav .info.manque, .fiche-nav a[aria-current="page"] .info.manque { color: var(--c-alerte); }
+.fiche-nav .picto { justify-self: center; color: var(--c-texte-3); }
+.fiche-nav a[aria-current="page"] .picto { color: var(--c-action); }
+.fiche-nav .compte { min-width: 20px; padding: 0 6px; border-radius: 10px; background: var(--c-fond-alt); font-size: 12px; color: var(--c-texte-2); text-align: center; }
+/* Étapes : pastille faite (coche), en cours (point), à venir (cercle), reliées par un trait, vert entre les étapes faites */
+.fiche-nav .etapes li { position: relative; }
+.fiche-nav .etapes li + li::before { content: ""; position: absolute; left: 20px; top: -9px; height: 18px; width: 2px; background: var(--c-filet); }
+.fiche-nav .etapes li.fait + li::before { background: var(--c-succes); }
+.fiche-nav .rond { width: 22px; height: 22px; border-radius: 50%; border: 2px solid var(--c-bordure); background: var(--c-fond); display: inline-flex;
+  align-items: center; justify-content: center; position: relative; z-index: 1; }
+.fiche-nav .fait .rond { background: var(--c-succes); border-color: var(--c-succes); }
+.fiche-nav .fait .rond::after { content: ""; width: 8px; height: 4px; border: 2px solid #fff; border-top: 0; border-right: 0; transform: rotate(-45deg) translate(1px, -1px); }
+.fiche-nav .cours .rond { border-color: var(--c-action); }
+.fiche-nav .cours .rond::after { content: ""; width: 8px; height: 8px; border-radius: 50%; background: var(--c-action); }
+.fiche-nav .avenir a { color: var(--c-texte-2); }
+/* Avancement : un chiffre et une barre, sans phrase */
+.fiche-avancement { margin: 4px 10px 0; padding-top: 16px; border-top: 1px solid var(--c-filet); font-size: 13.5px; }
+.fiche-avancement p { display: flex; justify-content: space-between; align-items: baseline; margin: 0; }
+.fiche-avancement b { font-size: 15px; }
+.fiche-avancement progress { display: block; width: 100%; height: 6px; margin: 8px 0 6px; appearance: none; border: 0; border-radius: 3px; background: var(--c-fond-alt); overflow: hidden; }
+.fiche-avancement progress::-webkit-progress-bar { background: var(--c-fond-alt); border-radius: 3px; }
+.fiche-avancement progress::-webkit-progress-value { background: var(--c-succes); border-radius: 3px; }
+.fiche-avancement progress::-moz-progress-bar { background: var(--c-succes); }
+/* Section : titre, état en une ligne, action au plus près ; pied : sections voisines de la même fiche */
+.fiche-section { padding-top: 24px; }
+.entete-section { display: flex; align-items: center; justify-content: space-between; gap: 20px; min-height: 36px; margin-bottom: 20px; }
+.entete-section h3 { font-size: 20px; line-height: 1.3; margin: 0; font-weight: 600; letter-spacing: -0.01em; }
+.etat-section { margin: 3px 0 0; color: var(--c-texte-2); font-size: 14px; }
+.entete-section .btn { flex: none; white-space: nowrap; font-size: 14px; }
+.pied-section { display: flex; align-items: center; flex-wrap: wrap; gap: 8px 16px; margin-top: 8px; padding-top: 18px; border-top: 1px solid var(--c-filet); font-size: 14px; }
+.pied-section .suiv { margin-left: auto; }
+.pied-section a { display: inline-flex; align-items: center; gap: 4px; min-height: 24px; text-underline-offset: 3px; }
+.fiche-rail { padding-top: 24px; font-size: 14px; }
+.fiche-rail h3 { font-size: 13px; font-weight: 600; color: var(--c-texte-2); margin: 0 0 8px; }
+.fiche-rail section + section { border-top: 1px solid var(--c-filet); margin-top: 18px; padding-top: 16px; }
+
+/* Champs (fiche.js champ) : libellé net, champ à la largeur de la section, repère sur le libellé */
+fieldset.question { border: 0; padding: 0; margin: 0 0 22px; min-inline-size: 0; }
+fieldset.question > legend { padding: 0; }
+.fiche .question { margin: 0 0 22px; padding-left: 0; border-left: 0; }
+.fiche .question > label, .fiche .question > .libelle { font-size: 14px; }
+.fiche .question :is(input[type=text], input:not([type]), select, textarea) { max-width: none; width: 100%; padding: 8px 11px; }
+.fiche textarea { width: 100%; min-height: 76px; line-height: 1.45; }
+.fiche .question input[type=number] { max-width: 220px; padding: 8px 11px; }
+.fiche :is(input, select, textarea):disabled { background: var(--c-fond-alt); border-color: var(--c-filet); color: var(--c-texte-2); cursor: not-allowed; }
+.question > label:is(.case, .interrupteur) { display: inline-flex; align-items: center; gap: 10px; min-height: 34px; margin-bottom: 0; cursor: pointer; }
+label.case input { width: 16px; height: 16px; margin: 0; accent-color: var(--c-action); }
+/* Repère : « à remplir » sur le libellé d'un champ requis vide, précédé au besoin d'un mot du projet */
+.repere { display: inline-block; font-size: 12px; font-weight: 600; line-height: 1.5; color: var(--c-texte-2); border: 1px solid var(--c-bordure); border-radius: 1em; padding: 0 7px; margin-left: 6px; vertical-align: 1px; }
+.repere.a-remplir { color: var(--c-alerte); border-color: #E3B873; background: var(--c-alerte-fond); }
+.repere[hidden] { display: none; }
+/* Groupes titrés, séparés par un filet ; champs courts en ligne ; note et justification côte à côte */
+.groupe-champs { padding: 4px 0 6px; margin-bottom: 18px; border-bottom: 1px solid var(--c-filet); }
+.groupe-champs:last-child { border-bottom: 0; }
+.groupe-champs h4 { font-size: 15px; font-weight: 600; margin: 0 0 12px; }
+.ligne-champs { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 150px), 1fr)); gap: 0 16px; align-items: start; }
+.paire-note { display: grid; grid-template-columns: 104px minmax(0, 1fr); gap: 0 16px; align-items: start; }
+.paire-note textarea, .ligne-champs textarea { min-height: 60px; }
+.note-sur { display: inline-flex; align-items: center; gap: 8px; color: var(--c-texte-2); }
+.question .note-sur input[type=number] { width: 60px; color: var(--c-texte); text-align: right; font-variant-numeric: tabular-nums; }
+/* Boutons segmentés : un choix parmi 3 à 5, lisible sans ouvrir de liste ; le premier, « — », efface */
+.segments { display: inline-flex; flex-wrap: wrap; border: 1px solid var(--c-bordure-champ); border-radius: var(--rayon); overflow: hidden; background: var(--c-fond); }
+.segments label { position: relative; display: inline-flex; align-items: center; min-height: 34px; padding: 4px 13px; cursor: pointer; border-left: 1px solid var(--c-filet); white-space: nowrap; font-size: 14px; font-weight: 500; }
+.segments label:first-child { border-left: 0; color: var(--c-texte-3); }
+.segments input { position: absolute; inset: 0; opacity: 0; margin: 0; cursor: pointer; }
+.segments label:hover { background: var(--c-fond-alt); }
+.segments label:has(input:checked) { background: var(--c-action); color: #fff; }
+.segments label:first-child:has(input:checked) { background: var(--c-fond-alt); color: var(--c-texte); }
+.segments label:has(input:focus-visible) { outline: 2px solid var(--c-focus); outline-offset: -3px; }
+.segments label:not(:first-child):has(input:checked:focus-visible) { outline-color: #fff; }
+.segments label:has(input:disabled) { cursor: not-allowed; opacity: .6; }
+/* Interrupteur : case à cocher au rôle switch */
+.interrupteur { font-weight: 600; font-size: 14px; }
+.interrupteur input { appearance: none; flex: none; width: 36px; height: 20px; border-radius: 10px; background: var(--c-bordure-champ); position: relative; cursor: pointer; margin: 0; }
+.interrupteur input::after { content: ""; position: absolute; top: 2px; left: 2px; width: 16px; height: 16px; border-radius: 50%; background: #fff; transition: left .15s ease-out; }
+.interrupteur input:checked { background: var(--c-action); }
+.interrupteur input:checked::after { left: 18px; }
+.interrupteur input:disabled { opacity: .5; cursor: not-allowed; }
+/* Largeurs : rail masqué sous 1240 px ; navigation en tête et non collée sous 760 px ; petite hauteur (zoom à 200 %) :
+   rien ne colle (app.js remet alors --h-fiche à 0) */
+@media (max-width: 1240px) { .fiche-corps, .fiche-corps:has(> .fiche-rail) { grid-template-columns: 220px minmax(0, 720px); gap: 36px; } .fiche-rail { display: none; } }
+@media (max-width: 860px) { .fiche-tete { margin: -16px -16px 0; padding: 0 16px; gap: 12px; } }
+@media (max-width: 760px) {
+  .fiche-corps, .fiche-corps:has(> .fiche-rail) { grid-template-columns: minmax(0, 1fr); gap: 0; }
+  .fiche-nav { position: static; max-height: none; padding-top: 16px; border-bottom: 1px solid var(--c-filet); }
+  .paire-note { grid-template-columns: minmax(0, 1fr); }
+  .entete-section { flex-wrap: wrap; }
+}
+@media (max-height: 560px) { .fiche-tete, .fiche-nav { position: static; max-height: none; } }
+
 /* ------------------------------------------------ tableaux */
 .tableau { border-collapse: collapse; width: 100%; font-size: 14px; }
 .tableau th { text-align: left; font-size: 13px; color: var(--c-texte-2); font-weight: 600; padding: 7px 10px; border-bottom: 1px solid var(--c-texte-2); white-space: nowrap; position: sticky; top: var(--h-entete, 0px); z-index: 2; background: var(--c-fond); }
@@ -169,7 +300,7 @@ input[readonly], textarea[readonly], select[disabled], input[disabled] { backgro
 .defil .tableau th { position: static; }
 .voile .tableau th { top: 0; }
 .tableau th button { background: none; border: 0; padding: 0; font: inherit; color: inherit; cursor: pointer; }
-.tableau th button.tri { display: inline-flex; gap: 4px; align-items: center; }
+.tableau th button.tri { display: inline-flex; gap: 4px; align-items: center; min-height: 24px; }
 .tableau th button.tri:hover { color: var(--c-action); text-decoration: underline; }
 .tri-fleche { font-size: 10px; color: var(--c-texte-2); }
 .tri.actif .tri-fleche { color: var(--c-action); }
@@ -274,7 +405,7 @@ input[readonly], textarea[readonly], select[disabled], input[disabled] { backgro
 .aide-texte figure { margin: 14px 0 20px; }
 .aide-texte img { max-width: 100%; border: 1px solid var(--c-bordure); border-radius: var(--rayon); display: block; }
 .aide-texte figcaption { font-size: 13px; color: var(--c-texte-2); margin-top: 6px; }
-.aide-texte blockquote { margin: 14px 0; padding: 10px 16px; background: var(--c-fond-alt); border-left: 3px solid var(--c-action); }
+.aide-texte blockquote { margin: 14px 0; padding: 10px 16px; background: var(--c-action-clair); border-radius: var(--rayon); }
 .aide-texte blockquote p { margin: 4px 0; }
 .aide-texte code { background: var(--c-fond-alt); padding: 1px 5px; border-radius: 3px; font-size: .92em; }
 .aide-texte li { margin: 3px 0; }
@@ -315,7 +446,7 @@ input[readonly], textarea[readonly], select[disabled], input[disabled] { backgro
 /* Texte lu par les lecteurs d'écran seulement */
 .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
 /* Pastille d'un onglet : nombre d'éléments nouveaux ou à traiter (le nombre est aussi lu, en texte masqué) */
-.pastille-onglet { display: inline-block; min-width: 18px; padding: 0 5px; margin-left: 4px; border-radius: 9px; background: var(--c-erreur); color: #fff; font-size: 11px; font-weight: 700; line-height: 18px; text-align: center; vertical-align: 1px; }
+.pastille-onglet { display: inline-block; min-width: 18px; padding: 0 5px; margin-left: 4px; border-radius: 9px; background: var(--c-erreur); color: #fff; font-size: 12px; font-weight: 700; line-height: 18px; text-align: center; vertical-align: 1px; }
 /* Lien qui ouvre une nouvelle fenêtre (RGAA 13.2) : pictogramme visible, texte lu par les lecteurs d'écran */
 a.nouvelle-fenetre:not(.btn)::after { content: " \2197"; font-size: .85em; }
 /* Zoom à 200 % (RGAA 10.4) : les en-têtes de tableau passent à la ligne ; un tableau large va dans .defil */

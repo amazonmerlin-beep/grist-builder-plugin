@@ -1,10 +1,11 @@
 // Vues d'exemple, à remplacer par celles du projet : la réponse de l'entité (répondant) et le suivi (pilotage).
 (function (L) {
   'use strict';
-  const C = L.core, A = L.app, esc = C.esc, e = C.etat;
+  const C = L.core, A = L.app, F = L.fiche, esc = C.esc, e = C.etat;
+  // Questions au format de fiche.js (F.champ) : type, et au besoin requis, exemple, valeurs (widget.md, « Formulaires »)
   const QUESTIONS = [
-    { col: 'Q1_Nom', libelle: '1. Nom du répondant', type: 'texte' },
-    { col: 'Q2_Effectif', libelle: '2. Effectif', type: 'entier' },
+    { col: 'Q1_Nom', lib: '1. Nom du répondant', type: 'texte' },
+    { col: 'Q2_Effectif', lib: '2. Effectif', type: 'nombre', min: 0, pas: 1 },
   ];
   // Statuts : valeur stockée → [libellé affiché, classe du badge]. Le libellé peut changer sans toucher aux
   // données ; le code ne compare jamais le texte d'un badge, mais data-etat (la valeur stockée).
@@ -18,13 +19,11 @@
       const r = maReponse();
       if (!r) return `<div class="colonne"><div class="note erreur">Aucune réponse n'est prévue pour votre entité (${esc(e.moi.entite || 'non renseignée')}). Écrivez à ${esc(C.param('contact_email'))}.</div></div>`;
       const lecture = r.Statut !== 'Brouillon';
-      // Erreur dite sous le champ (RGAA 11.10), pas dans un toast : la zone existe, masquée, et n'est reliée au
-      // champ (aria-describedby) que lorsqu'elle s'affiche
+      // Erreur dite sous le champ (RGAA 11.10), pas dans un toast : F.champ crée la zone, masquée, et erreurChamp ne
+      // la relie au champ (aria-describedby) que lorsqu'elle s'affiche
       return `<div class="colonne"><h2>Réponse : ${esc(nomEntite(r.Entite))}</h2>
         <p class="discret">Statut : ${badge(r.Statut)}. Chaque réponse est enregistrée dès que vous quittez le champ.</p>
-        ${QUESTIONS.map(q => `<div class="question"><label for="f-${q.col}">${esc(q.libelle)}</label>
-          <input id="f-${q.col}" data-col="${q.col}" type="${q.type === 'entier' ? 'number' : 'text'}"${q.type === 'entier' ? ' min="0" step="1" inputmode="numeric"' : ''} value="${esc(r[q.col] === null || r[q.col] === undefined ? '' : r[q.col])}"${lecture ? ' disabled' : ''}>
-          <p class="erreur-champ" id="err-${q.col}" hidden></p></div>`).join('')}
+        ${QUESTIONS.map(q => F.champ(q, r[q.col], { lecture })).join('')}
         ${lecture ? '<p class="note">Réponse transmise : elle ne peut plus être modifiée.</p>' : '<div class="actions"><button type="button" class="btn" data-action="transmettre">Transmettre</button></div>'}
       </div>`;
     },
@@ -40,8 +39,8 @@
     const r = maReponse();
     const q = QUESTIONS.find(x => x.col === el.dataset.col);
     if (!r || !q) return;
-    const v = q.type === 'entier' ? (el.value === '' ? null : Number(el.value)) : el.value.trim();
-    if (q.type === 'entier' && ((el.validity && el.validity.badInput) || (v !== null && (!Number.isInteger(v) || v < 0)))) {
+    const v = q.type === 'nombre' ? (el.value === '' ? null : Number(el.value)) : el.value.trim();
+    if (q.type === 'nombre' && ((el.validity && el.validity.badInput) || (v !== null && (!Number.isInteger(v) || v < 0)))) {
       return erreurChamp(el, 'Indiquez un nombre entier, sans décimale (0 ou plus).');
     }
     erreurChamp(el, '');
@@ -59,7 +58,7 @@
   const COLS_SUIVI = () => [
     ['entite', 'Entité', r => nomEntite(r.Entite)],
     ['statut', 'Statut', r => r.Statut],
-    ...QUESTIONS.map(q => [q.col, q.libelle, r => r[q.col], q.type === 'entier' ? 'desc' : 'asc']),
+    ...QUESTIONS.map(q => [q.col, q.lib, r => r[q.col], q.type === 'nombre' ? 'desc' : 'asc']),
   ];
   let filtresSuivi = {};
   A.vues.suivi = {

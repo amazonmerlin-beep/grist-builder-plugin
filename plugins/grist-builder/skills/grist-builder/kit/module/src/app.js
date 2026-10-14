@@ -23,10 +23,13 @@
       <div class="qui"><b>${esc(m.nom || m.email)}</b><br>${esc(libelleRole(m.role))}</div></header>`;
   }
   // Hauteur de l'en-tête fixe : les colonnes collantes se placent juste dessous ; 0 quand il ne colle pas
-  // (petite largeur ou petite hauteur, zoom à 200 % : voir ui.css)
+  // (petite largeur ou petite hauteur, zoom à 200 % : voir ui.css). Même chose pour l'en-tête d'une fiche
+  // (--h-fiche, fiche.js) : rien de focalisé ni de visé ne passe dessous ; 0 sur les autres écrans
   function majHauteurEntete() {
-    const ent = C.racine().querySelector('.entete');
-    if (ent) document.documentElement.style.setProperty('--h-entete', (getComputedStyle(ent).position === 'sticky' ? ent.offsetHeight : 0) + 'px');
+    const r = C.racine(), ent = r.querySelector('.entete'), tete = r.querySelector('.fiche-tete');
+    const colle = el => (el && getComputedStyle(el).position === 'sticky' ? el.offsetHeight : 0) + 'px';
+    if (ent) document.documentElement.style.setProperty('--h-entete', colle(ent));
+    document.documentElement.style.setProperty('--h-fiche', colle(tete));
   }
   // Élément actif avant un redessin du même écran, pour lui rendre le focus ensuite (RGAA 12.8) : repéré par son
   // id, sinon par ses attributs data-* d'action (et la valeur d'un bouton radio ou d'une case)
@@ -165,8 +168,12 @@
       pages.length = rangHist;
       try { fenHist.history.pushState({ module: true, n: rangHist, vue, arg }, ''); } catch (err) { /* sans historique : sans effet */ }
     }
+    const avant = { vue: C.etat.vue, arg: C.etat.arg || {} };
     C.etat.vue = vue; C.etat.arg = arg; rendre(); window.scrollTo(0, 0);
-    const h = C.racine().querySelector('#contenu h2');
+    // Titre focalisé : celui que vise la vue d'après l'écran quitté (vue.titre(avant) → sélecteur ; une fiche vise
+    // le titre de sa section quand on change de section, fiche.js titreSection), sinon le titre de l'écran
+    const v = vues[vue], vise = v && v.titre && v.titre(avant);
+    const h = (vise && C.racine().querySelector(vise)) || C.racine().querySelector('#contenu h2');
     if (h) { h.tabIndex = -1; h.focus({ preventScroll: true }); }
   }
 

@@ -8,7 +8,7 @@ const vm = require('vm');
 
 const SRC = path.join(__dirname, 'src');
 const DIST = path.join(__dirname, 'dist');
-const ORDRE = ['core.js', 'markdown.js', 'app.js', 'vue-aide.js', 'vue-exemple.js'];
+const ORDRE = ['core.js', 'markdown.js', 'app.js', 'fiche.js', 'vue-aide.js', 'vue-exemple.js'];
 const FACULTATIFS = new Set([]);
 
 const config = require('../projet.config');

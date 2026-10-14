@@ -212,6 +212,84 @@ Motifs retenus après une revue design complète d'un outil de dépôt et d'éva
   (après `ui.css` et les feuilles du projet) : à spécificité égale, ils l'emportent. Chaque règle porte en
   commentaire le constat qu'elle corrige ; les fusionner dans les feuilles du projet une fois la recette passée.
 
+## Formulaires et fiches de saisie
+
+Règles d'un consultant, appliquées et validées sur une fiche de saisie en plusieurs étapes. Composants :
+`kit/module/src/fiche.js` (`L.fiche`) ; styles : `ui.css`, section « formulaires ».
+
+**Règles**
+- **Pas de texte qui explique le métier** : ni « À faire : … », ni description de groupe, ni note « lecture seule tant
+  que… ». Des données et des repères seulement ; une aide devient au plus un **exemple dans le champ vide**
+  (`exemple` → `placeholder`, qui n'est pas une étiquette).
+- **Champs nets** : groupes titrés, sans description ; **jamais un champ court à côté d'une zone de texte** (hauteurs
+  inégales) : des champs courts en ligne, ou des zones de texte entre elles ; seule exception voulue, la note à côté
+  de sa justification. **Pas de barre de couleur épaisse** (bord gauche de 3 px) : cadre fin et fond teinté ; sections
+  sans cadre, séparées par des filets.
+- **Repère « à remplir »** sur le libellé d'un champ requis vide ; il disparaît une fois le champ rempli.
+- **Une tâche par écran** : une section de la fiche à la fois.
+- **Navigation interne plus en avant que la navigation entre fiches** : la colonne des sections reste visible ; pour
+  quitter la fiche, **un seul bouton « ← Retour à la liste »**, pas de précédent / suivant d'une fiche à l'autre (la
+  séance projetée, qui suit un ordre du jour, reste l'exception).
+- **En-tête fin à hauteur fixe** (64 px) : un en-tête qui se resserre au défilement « fait bug ».
+- **Deux niveaux de navigation qui ne se ressemblent pas** : onglets du module horizontaux et soulignés ; navigation
+  de la fiche verticale, en colonne, lien actif sur fond teinté.
+- **Boutons de taille normale, au plus près de ce qu'ils font** : l'action d'une étape dans l'en-tête de sa section
+  (« Terminer l'étape »), une action rare en lien dans le pied (« Clore… »), aucune action dans l'en-tête de la fiche.
+- **Contenu borné et centré** sur grand écran (section de 720 px au plus, ensemble de 1 400 px au plus) : pas de
+  tiers d'écran vide.
+- **Accessibilité** : texte à 4,5:1 au moins et de 12 px au moins ; bordure des champs à 3:1 ; cibles de 24 px au
+  moins ; pictogrammes en SVG `aria-hidden="true"`, jamais un émoji ni un caractère Unicode en guise d'icône (la
+  flèche « ← » d'un libellé reste du texte, masquée aux lecteurs d'écran).
+
+**Composants** (`const F = L.fiche`)
+
+| Composant | Appel | Ce qu'il fait |
+|---|---|---|
+| Champ | `F.champ(c, valeur, { lecture, erreur })` | Libellé relié, `data-col`, zone d'erreur `err-<col>` masquée ; `c.type` : `texte`, `zone`, `nombre`, `liste`, `choix`, `segments`, `note`, `interrupteur`, `case` ; `zeroVide: true` pour une colonne numérique ou une référence (vide = 0 dans Grist) |
+| Repère | `requis: true`, et au besoin `repere: '<mot>'` | « à remplir » tant que vide (« <mot> · à remplir ») ; `F.majRepere(el)` le met à jour après une écriture sans redessin |
+| Segments | `type: 'segments', valeurs: [3 à 5 valeurs]` | Boutons radio dans un `fieldset` ; le premier, « — », efface (lu « Non renseigné ») ; une valeur hors liste est montrée « (hors liste) », jamais effacée |
+| Note | `type: 'note'` (`max`, 10 par défaut), `F.paire(note, justification)` | « / 10 » visible, « (note sur 10) » lu ; la justification à côté |
+| Interrupteur | `type: 'interrupteur'` | Case à cocher `role="switch"` |
+| Groupes | `F.groupe(titre, corps)`, `F.ligne(...champs)` | Groupe titré (h4), sans cadre ; champs courts en ligne |
+| En-tête | `F.tete({ titre, sousTitre, statuts, retour })` | Hauteur fixe, collé sous les onglets ; un seul bouton (`data-action="retour"`) |
+| Navigation | `F.nav({ groupes, courante, pied })`, `F.avancement(libellé, n, total)` | Colonne ; étapes en `ol` : pastille faite / en cours / à venir, état dit en texte, trait entre les pastilles ; à droite date, durée, « n à remplir » ou compte ; `aria-current="page"` ; pictogrammes SVG pour les autres liens |
+| Section | `F.section(cle, F.enteteSection(titre, état, action) + … + F.piedSection({ prec, suiv, milieu }))` | Titre h3 focalisé au changement de section, sans contour ; sections voisines de la même fiche en pied |
+| Fiche | `F.page({ tete, nav, section, rail })` | Contenu borné et centré ; rail facultatif masqué sous 1 240 px ; une colonne sous 760 px ; rien ne colle en petite hauteur (zoom) |
+
+Changer de section passe par `aller()` (action `section`) : une entrée d'historique par section, et le focus va au
+titre de la section quand la vue déclare `titre: F.titreSection()` (`app.js` : `vue.titre(avant)` donne le titre à
+viser d'après l'écran quitté). `--h-fiche` (hauteur de l'en-tête, 0 quand il ne colle pas) est tenu par `app.js` :
+rien de focalisé ne passe dessous. Vue type, ouverte depuis l'onglet `liste` :
+
+```js
+const F = L.fiche, e = C.etat;
+const SECTIONS = [
+  { cle: 'examen', libelle: 'Examen', champs: [{ col: 'Avis', lib: 'Avis', type: 'zone', requis: true }] },
+  { cle: 'decision', libelle: 'Décision', champs: [{ col: 'Urgence', lib: 'Urgence', type: 'segments', valeurs: ['Basse', 'Normale', 'Haute'] }] },
+];
+A.vues.fiche = {
+  onglet: 'liste',            // onglet surligné, cible de « ← Retour à la liste » (filtres gardés : argRetour)
+  titre: F.titreSection(),    // focus sur le titre de la section quand on change de section dans la même fiche
+  rendre() {
+    const d = (e.doc.Dossiers || []).find(x => x.id === e.arg.id);
+    const k = SECTIONS.findIndex(s => s.cle === d.Phase);                    // étape en cours (données)
+    const i = Math.max(0, SECTIONS.findIndex(s => s.cle === (e.arg.section || d.Phase))), x = SECTIONS[i];
+    const manque = s => s.champs.filter(c => c.requis && (d[c.col] === null || d[c.col] === '')).length;
+    return F.page({
+      tete: F.tete({ titre: `n° ${d.id} · ${d.Objet}`, statuts: badge(d.Statut) }),
+      nav: F.nav({ courante: x.cle, groupes: [{ titre: 'Étapes', etapes: true, liens: SECTIONS.map((s, j) =>
+        ({ cle: s.cle, libelle: s.libelle, etat: j < k ? 'fait' : j === k ? 'cours' : 'avenir', manque: manque(s) })) }] }),
+      section: F.section(x.cle, F.enteteSection(x.libelle, '', i === k ? '<button type="button" class="btn" data-action="terminer">Terminer l’étape</button>' : '')
+        + x.champs.map(c => F.champ(c, d[c.col])).join('')
+        + F.piedSection({ prec: SECTIONS[i - 1], suiv: SECTIONS[i + 1] })),
+    });
+  },
+};
+// Saisie sans redessin : le repère suit sur place ; les compteurs de la navigation, au rendu suivant
+A.actions.saisie = el => C.maj('Dossiers', e.arg.id, { [el.dataset.col]: F.valeur(el) }, { rendre: false })
+  .then(() => { F.majRepere(el); C.signalerEnregistre(el.closest('.segments') || el); });
+```
+
 ## Saisir en lisant une pièce
 
 Quand la saisie se fait en lisant les pièces du dossier (grille de notation, contrôle de complétude), la pièce
@@ -317,7 +395,11 @@ Ce que le kit fait déjà :
   redéfinit la règle des champs avec `--c-bordure` (souvent #DDD, 1,4:1) la casse, vérifier l'ordre des feuilles ;
   bordure d'erreur `aria-invalid` qui l'emporte ;
 - champ fichier focalisable dans son `label.btn`, accordéons `details.accordeon`, sommaire « Dans ce guide »
-  repliable (replié sous 860 px, sans `display: none` : 10.4).
+  repliable (replié sous 860 px, sans `display: none` : 10.4) ;
+- formulaires (`fiche.js`) : navigation de la fiche avec `aria-current="page"` et état des étapes dit en texte,
+  segments en boutons radio dans un `fieldset`, interrupteur `role="switch"`, note « sur 10 » lue, titres focalisés
+  par programme sans contour (`:is(h2, h3)[tabindex="-1"]:focus { outline: none }`), texte tertiaire
+  (`--c-texte-3`) à 4,5:1 sur les trois fonds, liens de pied et boutons de tri d'au moins 24 px de haut.
 
 À faire dans chaque écran :
 - une étiquette pour chaque champ, `aria-label` dans les tableaux (11.1) ;
@@ -333,8 +415,9 @@ Motifs utiles :
   `<span aria-hidden="true">P</span><span class="sr-only">Partiellement</span>`. Même chose pour un
   pictogramme qui porte un sens (« avec commentaire »).
 - **Bouton icône** : `aria-label` explicite, qui dit l'action et son objet (« Commenter : question 12 »), et, si
-  la place le permet, un libellé visible court à côté de l'icône (« 💬 Commenter ») ; icône en
-  `aria-hidden="true"`. Un `title` seul ne suffit pas. Le nom accessible **contient le texte visible**, au début
+  la place le permet, un libellé visible court à côté de l'icône (pictogramme SVG puis « Commenter » ; jamais un
+  émoji ni un caractère Unicode en guise d'icône : `F.picto`) ; icône en `aria-hidden="true"`. Un `title` seul ne
+  suffit pas. Le nom accessible **contient le texte visible**, au début
   (« Non att. (non atteint) », pas « Non atteint » seul ; WCAG 2.5.3, RGAA 6.1) : sinon la commande vocale échoue.
   Une bascule garde un nom fixe ; son état passe par `aria-expanded` ou `aria-pressed`.
 

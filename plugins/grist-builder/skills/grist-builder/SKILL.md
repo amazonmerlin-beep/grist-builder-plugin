@@ -37,7 +37,7 @@ Lire la référence **au moment où la phase commence**, pas avant.
 
 Socle testé : Grist local et chargeur local du widget, construction du document d'après un schéma (formulaire
 public compris), identité et règles d'accès, squelette du module (veille, pastilles d'onglets, boutons
-précédent et suivant du navigateur), déploiement, tests (droits, parcours, accessibilité, zoom), partage, guides (notice de
+précédent et suivant du navigateur, composants de formulaire : fiche à étapes et champs, `fiche.js`), déploiement, tests (droits, parcours, accessibilité, zoom), partage, guides (notice de
 confidentialité comprise), jeu d'essai, livraison. Il ne contient pas d'écrans métier : ils s'écrivent par projet (`kit/module/src/vue-exemple.js`
 montre le motif).
 
@@ -94,6 +94,7 @@ Vérifier et, s'il en manque, le dire au consultant.
 | « J'ajoute les champs habituels du métier (n° de déclaration, tarif, téléphone) » | Chaque question : un usage dans l'outil et une source ; partir du formulaire validé, questions fermées au client (`donnees.md`) |
 | « Le titre et le fil d'Ariane rappellent où l'on est » | Onglet du parent surligné (`onglet` de la vue), titre d'onglet `sr-only`, pas de fil à un niveau (`widget.md`) |
 | « Les étapes en pastilles, avec les boutons à côté » | Frise d'états non cliquable + une seule action « Passer à … » (`widget.md`) |
+| « J'aide l'utilisateur : une phrase sous chaque champ, une description par groupe » | Données et repères seulement : un exemple dans le champ vide, « à remplir » sur le libellé, une section à la fois, en-tête fixe, un seul « ← Retour à la liste » (`widget.md`, « Formulaires », `fiche.js`) |
 | « Le déploiement local est refusé par le mode auto » | Cible explicite : `GRIST_URL=http://localhost:<port> DOC_COURANT=grist-local/doc-courant.json` |
 | « La confidentialité, c'est le client qui s'en occupe » | Notice livrée (gabarit du kit, « à fixer »), mention dans le formulaire public (`livraison.md`) |
 | « Une case cochée : l'écran se mettra à jour » | Le focus reste sur la case : sans redessin après sa propre écriture, badge et boutons restent périmés ; focus rendu ensuite (`widget.md`) |

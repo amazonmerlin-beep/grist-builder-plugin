@@ -47,6 +47,9 @@ en local, tests lancés avec des options de Chrome, et une table d'indicateurs l
 - Tests qui attendent le module prêt (ci-dessus).
 - Relecture des droits, table par table et rôle par rôle, tables calculées comprises (`permissions.md`).
 - Ordre de saisie : aucune question ne s'appuie sur une réponse demandée plus loin (`donnees.md`).
+- Formulaires (kit 0.9) : `module/src/fiche.js` (ajouté à `build.js`), section « formulaires » et jetons
+  `--c-texte-3`, `--c-filet`, `--c-action-clair` de `ui.css`, `vue.titre` et `--h-fiche` dans `app.js`
+  (`widget.md`, « Formulaires et fiches de saisie »).
 
 ## Revue design (avant une recette ou une livraison)
 

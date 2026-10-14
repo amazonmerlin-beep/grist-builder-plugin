@@ -36,7 +36,7 @@ vérifie et le signale s'il en manque.
 |---|---|
 | `plugins/grist-builder/skills/grist-builder/SKILL.md` | Point d'entrée : phases, signaux d'alerte |
 | `…/references/` | Cadrage, estimation, arbitrages, MCP Grist, widget, permissions, données (dont formulaire public par script), reprise d'un document existant, livraison |
-| `…/kit/` | Socle testé : Grist local et chargeur local du widget, construction scriptée (formulaire public compris), identité et règles d'accès, squelette du module (relecture ciblée, veille et pastilles, bouton retour, pièces jointes, fenêtres accessibles), tests par rôle dans Chrome par défaut, contrôles RGAA et zoom, captures des écrans, règles appliquées à un document existant, partage nominatif (simulation par défaut), guides et notice de confidentialité, jeu d'essai, livraison |
+| `…/kit/` | Socle testé : Grist local et chargeur local du widget, construction scriptée (formulaire public compris), identité et règles d'accès, squelette du module (relecture ciblée, veille et pastilles, bouton retour, pièces jointes, fenêtres accessibles, composants de formulaire), tests par rôle dans Chrome par défaut, contrôles RGAA et zoom, captures des écrans, règles appliquées à un document existant, partage nominatif (simulation par défaut), guides et notice de confidentialité, jeu d'essai, livraison |
 | `docs/specs/` | Spécification |
 | `docs/tests/` | Scénarios de vérification du skill, sans et avec |
 
@@ -49,6 +49,19 @@ Issues et pull requests bienvenues : https://github.com/amazonmerlin-beep/grist-
 propose lui-même, une fois et avec votre accord, d'en ouvrir une après un défaut corrigé ou une idée
 réutilisable (section « Contribuer au plugin » de `SKILL.md`). Contenu généralisé : jamais de données, noms,
 adresses ou identifiants d'un client. Licence MIT.
+
+## Nouveautés 0.9.0 (formulaires ergonomiques, 14/10/2026)
+
+- **Formulaires et fiches de saisie** (`references/widget.md`) : règles d'un consultant validées sur une fiche en
+  plusieurs étapes (pas de texte qui explique le métier, exemple dans le champ vide, groupes titrés, repère « à
+  remplir », une section à la fois, en-tête fin à hauteur fixe, un seul « ← Retour à la liste », deux niveaux de
+  navigation distincts, contenu borné et centré, seuils d'accessibilité).
+- **Composants du kit** (`kit/module/src/fiche.js`, section « formulaires » de `ui.css`) : champs (texte, zone,
+  nombre, liste, choix, boutons segmentés, note sur 10, interrupteur, case), en-tête de fiche, navigation par
+  étapes en colonne, section et pied ; focus sur le titre de section au changement de section (`vue.titre`). Tests
+  unitaires (`module/test/fiche.test.js`).
+- **Retouches du socle** : messages sans barre de couleur épaisse, texte tertiaire à 4,5:1, pastille d'onglet à 12 px,
+  boutons de tri de 24 px ; en-tête de `ui.css` rendu générique.
 
 ## Nouveautés 0.8.0 (retours de la mission LAPI, 13/10/2026)
 

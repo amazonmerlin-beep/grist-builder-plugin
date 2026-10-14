@@ -184,3 +184,30 @@ Kit copié à neuf (`essai/v08`, Grist local sur le port 8486, la DITND occupant
 
 Même motif d'abord écrit et éprouvé dans le module LAPI (18 parcours, dont deux sur l'historique, et 16 tests de
 droits verts dans Chrome par défaut, avec le chargeur local).
+
+## Version 0.9.0 (14/10/2026) : formulaires ergonomiques
+
+Règles et composants d'une fiche de saisie validée chez un client, portés de façon générique (aucun nom, aucune
+donnée, aucun identifiant de colonne du projet). Kit copié à neuf hors du dépôt ; **ni Grist, ni Docker** : les
+tests de droits et de parcours ne sont pas lancés. Les composants sont vérifiés sur des pages de démonstration
+statiques (`fiche.js` + `ui.css`, données fictives), ouvertes dans Chrome par défaut.
+
+| Contrôle | Résultat |
+|---|---|
+| `node --check` (sources du module, `build.js`, tests) | sans erreur |
+| Assemblage du module (`node module/build.js`) | 6 fichiers (dont `fiche.js`), 66 Ko de JS, 37 Ko de CSS |
+| Tests unitaires (`npm test`) | 31 / 31, dont 11 nouveaux (`fiche.test.js` : champs, repère, segments, navigation, focus de section, actions) |
+| Exemple de vue de `widget.md`, exécuté tel quel sur un document fictif | une section affichée, `aria-current` unique, « n à remplir » dans la navigation, titre de section visé |
+| En-tête de fiche au défilement (1 920, 1 280 et 375 px) | 64 px avant et après, collé sous les onglets (sous le bord haut à 375 px) |
+| Débordement horizontal à 375 px | aucun |
+| axe-core (WCAG 2.0 à 2.2, A et AA) à 1 280 px | aucune violation |
+| Titre de section focalisé par programme | contour `none` |
+| Clavier sur les boutons segmentés | flèche droite : valeur suivante cochée, contour visible (blanc sur le segment coché) |
+| `majRepere` dans Chrome | repère masqué une fois rempli, « à remplir » revenu quand on vide (zone de texte, segments, « — ») |
+| Contrastes calculés | `--c-texte-3` 5,17:1 sur blanc, 4,69:1 sur `--c-fond-alt`, 4,55:1 sur `--c-action-clair` ; bordure des champs 4,12:1 et 3,73:1 |
+| `claude plugin validate` (marketplace et plugin) | validation réussie |
+| Tests de droits, parcours Chrome, `test:rgaa`, `test:zoom` sur Grist local | **non lancés** (sans Grist) ; le module d'exemple garde ses sélecteurs (`#f-Q1_Nom`, `err-Q1_Nom`, `[data-action="transmettre"]`) |
+
+Défauts trouvés sur les pages de démonstration et corrigés : repère masqué affiché en petit tiret (`display`
+l'emportait sur `hidden`) ; contour de focus invisible sur le segment coché (bleu sur bleu) ; liens du pied de section
+de 21 px de haut (portés à 24).
