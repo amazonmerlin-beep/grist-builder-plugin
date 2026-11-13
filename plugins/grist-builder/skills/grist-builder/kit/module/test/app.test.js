@@ -7,7 +7,7 @@ globalThis.Formulaire = { CONFIG: { tablesModule: [], roles: {}, onglets: {} } }
 require('../src/core.js');
 require('../src/app.js');
 const A = globalThis.Formulaire.app;
-const { natureFocus, redessinPermis, argClicOnglet } = A.regles;
+const { natureFocus, redessinPermis, argClicOnglet, garder } = A.regles;
 
 const champ = (tagName, type) => ({ tagName, type });
 
@@ -47,4 +47,21 @@ test('onglet parent cliqué depuis une sous-vue : la liste revient avec ses filt
   assert.deepEqual(argClicOnglet('autre', 'fiche'), {}, 'vue sans argRetour');
   A.vues.liste.argRetour = () => null;
   assert.deepEqual(argClicOnglet('liste', 'fiche'), {}, 'argRetour vide');
+});
+
+test('action en échec : le rejet est rattrapé et signalé à l\'écran, jamais silencieux', async () => {
+  const C = globalThis.Formulaire.core;
+  const toastOrigine = C.toast, erreurOrigine = console.error;
+  const vus = [];
+  C.toast = (msg, type) => vus.push([msg, type]);
+  console.error = () => {};
+  try {
+    await garder(Promise.reject(new Error('access denied')));
+    assert.equal(vus.length, 1);
+    assert.equal(vus[0][1], 'erreur');
+    assert.match(vus[0][0], /autoris/);
+    await garder(Promise.resolve(1));
+    assert.equal(garder(undefined), undefined, 'action synchrone : rien à garder');
+    assert.equal(vus.length, 1, 'une action réussie ne signale rien');
+  } finally { C.toast = toastOrigine; console.error = erreurOrigine; }
 });

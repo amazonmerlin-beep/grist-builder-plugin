@@ -240,18 +240,24 @@
     const retour = vu && vu.argRetour && courante !== cible && ongletDe(courante) === cible;
     return (retour && vu.argRetour()) || {};
   }
+  // Une action qui échoue sans gérer l'erreur elle-même (écriture refusée, connexion perdue) le dit à l'écran au
+  // lieu d'échouer en silence (rejet non rattrapé) ; celles qui gèrent leur erreur ne passent pas par ici
+  function garder(r) {
+    if (!r || typeof r.then !== 'function') return r;
+    return r.catch(x => { console.error(x); C.toast(C.messageErreur(x), 'erreur'); });
+  }
   function deleguer(racine) {
     racine.addEventListener('click', ev => {
       const v = ev.target.closest('[data-vue]');
       if (v) { ev.preventDefault(); return aller(v.dataset.vue, argClicOnglet(v.dataset.vue, C.etat.vue)); }
       const a = ev.target.closest('[data-action]');
-      if (a && actions[a.dataset.action]) { ev.preventDefault(); actions[a.dataset.action](a, ev); }
+      if (a && actions[a.dataset.action]) { ev.preventDefault(); garder(actions[a.dataset.action](a, ev)); }
     });
     racine.addEventListener('change', ev => {
       const el = ev.target;
-      if (el.dataset && el.dataset.actionFichier && actions[el.dataset.actionFichier]) return actions[el.dataset.actionFichier](el, ev);
-      if (el.dataset && el.dataset.change && actions[el.dataset.change]) return actions[el.dataset.change](el, ev);
-      if (el.dataset && el.dataset.col && actions.saisie) actions.saisie(el);
+      if (el.dataset && el.dataset.actionFichier && actions[el.dataset.actionFichier]) return garder(actions[el.dataset.actionFichier](el, ev));
+      if (el.dataset && el.dataset.change && actions[el.dataset.change]) return garder(actions[el.dataset.change](el, ev));
+      if (el.dataset && el.dataset.col && actions.saisie) garder(actions.saisie(el));
     });
   }
 
@@ -304,5 +310,5 @@
 
   L.app = { actions, vues, pastilles, aller, rendre, rafraichir, memoriser, demarrer, libelleRole, ongletsDuRole,
     // Règles pures, testées sans navigateur (module/test/app.test.js)
-    regles: { natureFocus, redessinPermis, argClicOnglet } };
+    regles: { natureFocus, redessinPermis, argClicOnglet, garder } };
 })(globalThis.Formulaire = globalThis.Formulaire || {});

@@ -6,7 +6,7 @@
   par rôle. `npm run test:parcours` : parcours dans Chrome (inconnu, chaque rôle, action principale de chacun).
 - **Lancer les suites E2E en séquentiel** (`node --test --test-concurrency=1`, ou fichier par fichier) : plusieurs
   fichiers de test écrivent et réinitialisent les mêmes entités de test dans le même document ; les exécuter
-  en parallèle provoque des collisions d’état.
+  en parallèle provoque des collisions d'état.
 - Rejouables : remise à zéro des seules entités de test, attentes calculées, jamais de données de
   démonstration effacées.
 - Captures en série de tous les écrans (Playwright) : elles servent aux guides et à l'atelier, et révèlent

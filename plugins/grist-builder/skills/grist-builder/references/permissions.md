@@ -40,17 +40,16 @@ annuaire confidentiel, pas de partage nominatif ; avec des invitations, le dire 
 - **Référence invalide** (élément de référentiel inexistant ou désactivé, ligne d'un autre ensemble) : une
   colonne d'aide booléenne (`bool($Element.Actif)`, vraie si la référence existe et est active) testée dans la
   règle de création (`newRec.Element_actif`).
-- **Référence ou rattachement modifiable en mise à jour (`+U` : le piège `rec.` vs `newRec.`)** : sur une
-  table qui porte une colonne `Entite` ou `Ref:` non verrouillée par `-U` (ex. une table enfant `Equipements`
-  dont `Systeme` est réaffectable entre systèmes du même périmètre, ou `Systemes` relié à `Reponse`), une règle
-  `+CRUD` / `+RU` écrite seulement avec `rec.Entite_systeme == ...` bloque un `AddRecord` vers une autre entité,
-  mais **laisse `UpdateRecord` basculer la colonne `Ref:` vers la fiche d’une autre entité** (`rec` désigne la
-  ligne *avant* modification). Deux solutions : verrouiller la colonne par `-U` si elle est immuable
-  (`Entite`, `Reponse`), ou **séparer `+CRD` (`rec.`) et `+U` (`newRec.`)** en vérifiant sur `newRec` l’entité
-  de la ligne et celle de la référence cible (colonne calculée `$Systeme.Entite if $Systeme else ""`), puis
-  tester les deux opérations (`AddRecord` **et** `UpdateRecord`) dans `acces.test.js`.
-- **Condition non vide sur la table `*`** : `['', '-CRUDS']` après `[PROPRIO, '+CRUDS']` fonctionne par l’API,
-  mais l’éditeur visuel des règles d’accès de Grist refuse d’enregistrer une condition vide au-dessus d’une
+- **Rattachement modifiable en mise à jour (`+U` : `rec` contre `newRec`)** : en `UpdateRecord`, `rec` est la
+  ligne *avant* l'écriture. Une règle `+CRUD` ou `+RU` qui ne teste que `rec.Entite` (ou l'entité d'une ligne
+  référencée, `rec.Entite_parent`) bloque un `AddRecord` vers une autre entité, mais **laisse un `UpdateRecord`
+  basculer la colonne `Ref:` (ou `Entite`) vers une ligne d'une autre entité**. Deux parades : verrouiller la
+  colonne par `-U` si elle ne change jamais (la référence au parent, l'entité), ou **séparer `+CRD` (`rec.`) et
+  `+U` (`newRec.`)** en testant sur `newRec` l'entité de la ligne et celle de la ligne référencée (colonne
+  calculée `$Parent.Entite if $Parent else ""`). Tester les deux opérations (`AddRecord` **et**
+  `UpdateRecord`) dans `tests-e2e/acces.test.js` ; `schema/acces.test.js` signale une règle `+U` en `rec.` seul.
+- **Condition non vide sur la table `*`** : `['', '-CRUDS']` après `[PROPRIO, '+CRUDS']` fonctionne par l'API,
+  mais l'éditeur visuel des règles d'accès de Grist refuse d'enregistrer une condition vide au-dessus d'une
   autre ; écrire `['user.Access != OWNER', '-CRUDS']` évite tout blocage en interface.
 - Relecture automatique sans Grist : `schema/acces.test.js` (`npm test`) vérifie la forme des règles, `newRec`
   hors lecture, `+C` contraint, `+U` sur colonnes de lien/entité non verrouillées (`newRec.`), statut borné,
@@ -161,7 +160,7 @@ les règles ; une connexion à l'adresse d'un autre est refusée.
   Une faille non prouvée reste une hypothèse ; une faille prouvée devient un correctif **et** un test
   (`tests-e2e/acces.test.js`), rejoué avant et après.
 - Pistes à essayer à chaque fois : création avec des valeurs de traitement (statut, auteur, nom, date) ; statut
-  hors liste ; **réaffectation par `UpdateRecord` d’une colonne `Entite` ou `Ref:` vers une autre entité**
+  hors liste ; **réaffectation par `UpdateRecord` d'une colonne `Entite` ou `Ref:` vers une autre entité**
   (même si `AddRecord` est déjà bloqué) ; écriture après retrait (désactivé, conflit, membre décoché) ; référence inexistante ou inactive ;
   doublon par l'administration ; dépôt anonyme dans les colonnes réservées ; colonnes calculées qui recopient
   une donnée masquée ; **chaque table lue par un compte de chaque rôle**, à la recherche de données d'un autre

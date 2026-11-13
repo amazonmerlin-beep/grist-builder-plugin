@@ -119,11 +119,17 @@ Phase « séance et parcours » de la DITND : `widget.md` (écrans de décision 
 rôle, réunion projetée ; connexion depuis le widget, `next` relatif), signaux d'alerte de `SKILL.md`. Vérification
 S12 à S16 (`docs/tests/verification.md`).
 
-## Version 0.9.0 (19/10/2026) / 0.10.0 (13/11/2026)
-Revue approfondie d'un projet complet (LAPI : sécurité, formules, exports, module, E2E, accessibilité). Kit :
-- `core.js` : `jeton(lectureSeule)` avec jeton en lecture seule pour `infosPiecesJointes` (et `televerser` explicite en écriture) ;
-- `schema/acces.test.js` : contrôle statique des règles `+U` qui s'appuient sur `rec.` lorsque des colonnes `Entite` ou `Ref:` ne sont pas verrouillées par `-U` (piège `UpdateRecord` bloqué sur `AddRecord` seul).
-Références : `permissions.md` (séparation `+CRD`/`+U` avec `newRec.`, condition non vide sur `*`, recherche systématique du basculement de référence en `UpdateRecord`), `widget.md` (`infosPiecesJointes` en lecture seule, téléchargement via `lirePiece` plutôt qu'un `href` à jeton), `donnees.md` (tests unitaires de dérive schéma ↔ formules/indicateurs/exports/rôles), `livraison.md` (suites E2E séquentielles `--test-concurrency=1`).
+## Version 0.10.0 (13/11/2026)
+Revue approfondie de LAPI (droits, formules, exports, module, E2E, accessibilité), puis relecture. Kit :
+- `core.js` : jeton en lecture seule pour `infosPiecesJointes`, en écriture pour `televerser` seulement ;
+- `schema/acces.test.js` : signale une règle `+U` écrite en `rec.` seul quand une colonne `Entite` ou `Ref:`
+  reste modifiable (un `UpdateRecord` bascule la ligne vers une autre entité, même si `AddRecord` est bloqué) ;
+- `app.js` : `garder()` rattrape l'échec d'une action déléguée et l'affiche (toast), au lieu d'un rejet
+  silencieux (`test/app.test.js`).
+Références : `permissions.md` (séparer `+CRD` en `rec.` et `+U` en `newRec.`, condition non vide sur `*`,
+basculement de référence à essayer à chaque revue), `widget.md` (métadonnées en lecture seule, téléchargement
+par `lirePiece`), `donnees.md` (contrôles de dérive schéma, formules, indicateurs, exports ; une source
+d'indicateur désactivable depuis le module reste valide), `livraison.md` (suites E2E en séquentiel).
 
 ## e) Prochaines actions
 1. Faire installer le plugin par un collègue (README) et recueillir ses retours.

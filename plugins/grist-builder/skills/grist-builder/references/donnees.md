@@ -53,13 +53,14 @@ partie 2 à des systèmes déclarés en partie 4.
 
 ## Évolution du schéma : questions désactivées, colonnes renommées, rôles retirés
 
-Quand un projet vit (question passée à `active: false`, colonne renommée, rôle retiré de l’annuaire), le
-document continue de compiler alors que des formules Python, fiches d’indicateurs, exports ou tests deviennent
+Quand un projet vit (question passée à `active: false`, colonne renommée, rôle retiré de l'annuaire), le
+document continue de compiler alors que des formules Python, fiches d'indicateurs, exports ou tests deviennent
 périmés. Ajouter des contrôles unitaires (`npm test`) dès le premier changement de schéma :
-- **Formules et indicateurs ↔ colonnes actives** : extraire les `$Colonne` des formules Python du modèle et
-  vérifier qu’aucune ne pointe une colonne absente ou désactivée (et borner explicitement en test d’éventuelles
-  exceptions temporaires assumées) ; même contrôle sur les `sources` des définitions d’indicateurs.
-- **Exports, vues et jeux d’essai** : rechercher les identifiants renommés et rôles supprimés (`rg`) dans
+- **Formules et indicateurs ↔ colonnes** : extraire les `$Colonne` des formules Python du modèle et vérifier
+  qu'aucune ne pointe une colonne absente, ni une question désactivée par défaut (formule périmée) ; vérifier
+  que chaque `source` d'indicateur existe. Ne pas exiger qu'elle soit active quand l'administration active et
+  désactive les questions depuis le module : l'indicateur retrouve sa source à la réactivation.
+- **Exports, vues et jeux d'essai** : rechercher les identifiants renommés et rôles supprimés (`rg`) dans
   `schema/`, `module/`, `outils/`, `tests-e2e/` et les CSV modèles (un champ renommé non détecté en test
   exporte silencieusement une colonne vide).
 
