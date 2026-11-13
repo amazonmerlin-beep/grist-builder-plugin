@@ -119,6 +119,12 @@ Phase « séance et parcours » de la DITND : `widget.md` (écrans de décision 
 rôle, réunion projetée ; connexion depuis le widget, `next` relatif), signaux d'alerte de `SKILL.md`. Vérification
 S12 à S16 (`docs/tests/verification.md`).
 
+## Version 0.9.0 (19/10/2026) / 0.10.0 (13/11/2026)
+Revue approfondie d'un projet complet (LAPI : sécurité, formules, exports, module, E2E, accessibilité). Kit :
+- `core.js` : `jeton(lectureSeule)` avec jeton en lecture seule pour `infosPiecesJointes` (et `televerser` explicite en écriture) ;
+- `schema/acces.test.js` : contrôle statique des règles `+U` qui s'appuient sur `rec.` lorsque des colonnes `Entite` ou `Ref:` ne sont pas verrouillées par `-U` (piège `UpdateRecord` bloqué sur `AddRecord` seul).
+Références : `permissions.md` (séparation `+CRD`/`+U` avec `newRec.`, condition non vide sur `*`, recherche systématique du basculement de référence en `UpdateRecord`), `widget.md` (`infosPiecesJointes` en lecture seule, téléchargement via `lirePiece` plutôt qu'un `href` à jeton), `donnees.md` (tests unitaires de dérive schéma ↔ formules/indicateurs/exports/rôles), `livraison.md` (suites E2E séquentielles `--test-concurrency=1`).
+
 ## e) Prochaines actions
 1. Faire installer le plugin par un collègue (README) et recueillir ses retours.
 2. Ajouter au kit, si les projets le demandent : outil des comptes en masse, jeu de démonstration (voir LAPI).

@@ -34,6 +34,29 @@ test('règles : toute création ouverte hors administration contraint la ligne c
   }
 });
 
+test('règles : une modification (+U) basée sur rec. protège les colonnes de lien ou entité (newRec ou -U)', () => {
+  // En modification (+U), rec désigne la ligne avant écriture : si Entite/Ref sont modifiables (absents des règles -U)
+  // et que +U ne contraint pas newRec., UpdateRecord peut rattacher la ligne à une autre entité.
+  const verrouilleesU = table => new Set(
+    jeux()
+      .filter(j => j.table === table && j.colonnes !== '*' && j.regles.some(([f, p]) => (!f || f === 'user.Access != OWNER') && /-[CRUDS]*U/.test(p)))
+      .flatMap(j => j.colonnes.split(',').map(s => s.trim()))
+  );
+  for (const j of jeux().filter(x => x.colonnes === '*')) {
+    const verrous = verrouilleesU(j.table);
+    const liensOuverts = colonnesDe(j.table).filter(c =>
+      (!c.formule || c.declencheur)
+      && (c.id === 'Entite' || c.id === 'Departement' || /^Ref(List)?:/.test(c.type))
+      && !verrous.has(c.id)
+    );
+    if (!liensOuverts.length) continue;
+    for (const [f, p] of j.regles) {
+      if (!accorde(p, 'U') || libre(f) || !/\brec\./.test(f)) continue;
+      assert.match(f, /\bnewRec\./, `${j.table} : « ${f} » ouvre +U avec rec. sans newRec. alors que ${liensOuverts.map(c => c.id).join(', ')} est modifiable`);
+    }
+  }
+});
+
 test('règles : statut borné avant toute modification ouverte hors administration', () => {
   for (const j of jeux().filter(x => x.colonnes === '*' && colonnesDe(x.table).some(c => c.id === 'Statut' && c.type === 'Choice'))) {
     const i = j.regles.findIndex(([f, p]) => accorde(p, 'U') && !libre(f));

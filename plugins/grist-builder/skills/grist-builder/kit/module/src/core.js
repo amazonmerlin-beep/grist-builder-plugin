@@ -84,9 +84,9 @@
   async function ajouter(table, champs, o) { const r = await appliquer([['AddRecord', table, null, champs]], o); return r.retValues[0]; }
 
   // ------------------------------------------------------------------ pièces jointes (jeton d'accès du widget)
-  const jeton = () => grist.docApi.getAccessToken({ readOnly: false });
+  const jeton = (lectureSeule = false) => grist.docApi.getAccessToken({ readOnly: lectureSeule });
   async function televerser(fichiers) {
-    const t = await jeton();
+    const t = await jeton(false);
     const fd = new FormData();
     for (const f of fichiers) fd.append('upload', f, f.name);
     // En-tête exigé pour un envoi authentifié par jeton (sinon 401, affiché « Failed to fetch »)
@@ -94,11 +94,11 @@
     if (!r.ok) throw new Error(`envoi refusé (${r.status})`);
     return r.json();
   }
-  /** Nom, taille et lien de chaque pièce jointe (lus un par un : la liste globale est fermée par les règles). */
+  /** Nom, taille et lien de chaque pièce jointe (jeton en lecture seule ; la liste globale est fermée par les règles). */
   async function infosPiecesJointes(ids) {
     if (!ids || !ids.length) return [];
     let t = null;
-    try { t = await jeton(); } catch (e) { /* jeton indisponible */ }
+    try { t = await jeton(true); } catch (e) { /* jeton indisponible */ }
     return Promise.all(ids.map(async id => {
       if (!t) return { id, nom: `Fichier n° ${id}`, taille: null, url: null };
       const auth = `auth=${encodeURIComponent(t.token)}`;

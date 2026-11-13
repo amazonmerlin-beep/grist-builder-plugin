@@ -51,6 +51,18 @@ partie 2 à des systèmes déclarés en partie 4.
 - Colonne calculée de type `RefList` : renvoyer une liste d'identifiants (`sorted(ids)`) ; `$Ref.RefList.id` donne
   la liste des identifiants.
 
+## Évolution du schéma : questions désactivées, colonnes renommées, rôles retirés
+
+Quand un projet vit (question passée à `active: false`, colonne renommée, rôle retiré de l’annuaire), le
+document continue de compiler alors que des formules Python, fiches d’indicateurs, exports ou tests deviennent
+périmés. Ajouter des contrôles unitaires (`npm test`) dès le premier changement de schéma :
+- **Formules et indicateurs ↔ colonnes actives** : extraire les `$Colonne` des formules Python du modèle et
+  vérifier qu’aucune ne pointe une colonne absente ou désactivée (et borner explicitement en test d’éventuelles
+  exceptions temporaires assumées) ; même contrôle sur les `sources` des définitions d’indicateurs.
+- **Exports, vues et jeux d’essai** : rechercher les identifiants renommés et rôles supprimés (`rg`) dans
+  `schema/`, `module/`, `outils/`, `tests-e2e/` et les CSV modèles (un champ renommé non détecté en test
+  exporte silencieusement une colonne vide).
+
 ## Formulaire natif publié (par script)
 
 Un formulaire Grist est une section `form` sur la table cible. Il se publie sans l'interface, en trois étapes.

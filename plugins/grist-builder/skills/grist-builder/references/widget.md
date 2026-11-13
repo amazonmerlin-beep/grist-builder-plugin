@@ -335,10 +335,13 @@ du document ouvert (identifiant, adresse blob) se garde dans la vue, pour qu'un 
 - **lire le statut** avant `blob()` ;
 - aperçu dans la page par `URL.createObjectURL`.
 
-Pour les métadonnées, lire `/attachments/<id>?auth=…` pièce par pièce, et garder les noms en cache.
+Pour les métadonnées (`core.infosPiecesJointes`) ou les vignettes, demander aussi un jeton **en lecture seule**
+(`getAccessToken({ readOnly: true })`) et lire `/attachments/<id>?auth=…` pièce par pièce, en gardant les noms
+en cache.
 
-**Ne jamais mettre le jeton dans un `href`.** Il donne accès en écriture, il reste dans l'historique du
-navigateur et il expire au bout de quelques minutes.
+**Ne jamais mettre le jeton dans un `href`.** S'il était en écriture, il donnerait accès en écriture ; même en
+lecture seule, il reste dans le DOM et l'historique du navigateur et expire au bout de quelques minutes : pour
+télécharger ou prévisualiser une pièce au clic, passer par `core.lirePiece` (fetch `blob` + `URL.createObjectURL`).
 
 Pour un envoi (`POST /attachments?auth=…`), l'en-tête `X-Requested-With: XMLHttpRequest` est exigé :
 sans lui, Grist répond 401, que le navigateur affiche « Failed to fetch ».
